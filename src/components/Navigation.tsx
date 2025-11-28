@@ -11,11 +11,17 @@ export default function Navigation() {
     { to: "/dividend-yield", label: "Dividend Yield" },
   ];
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 border-b m-auto px-4">
+    <nav className="fixed top-0 left-0 right-0 h-16 border-b m-auto px-4 bg-white">
       <ul className="h-16 items-center flex flex-row gap-4">
         {navItems.map((item) => (
-          <li className="py-4 px-2 rounded-md hover:bg-red-100">
-            <Link to={item.to}>{item.label}</Link>
+          <li key={item.to}>
+            <Link
+              className="py-4 px-2 rounded-md hover:bg-amber-100"
+              to={item.to}
+              activeProps={{ className: "bg-blue-200" }}
+            >
+              {item.label}
+            </Link>
           </li>
         ))}
       </ul>
