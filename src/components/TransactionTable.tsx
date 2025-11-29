@@ -1,56 +1,6 @@
-import { useEffect, useState } from "react";
-import Papa, { ParseResult } from "papaparse";
 import { Card } from "./ui/card";
 
-const OperationEnum = {
-  Buy: "Buy",
-  Sell: "Sell",
-  Dividend: "Dividend",
-} as const;
-
-type OperationEnum = (typeof OperationEnum)[keyof typeof OperationEnum];
-
-const CurrencyEnum = {
-  USD: "USD",
-  EUR: "EUR",
-  GBP: "GBP",
-} as const;
-type CurrencyEnum = (typeof CurrencyEnum)[keyof typeof CurrencyEnum];
-
-interface DataRow {
-  operation: OperationEnum;
-  ticker: string;
-  date: string;
-  type: string;
-  quantity: number;
-  price: number;
-  currency: CurrencyEnum;
-  note: string;
-}
-
-export default function TransactionTable({ onEdit }) {
-  const [data, setData] = useState<DataRow[]>([]);
-
-  useEffect(() => {
-    fetch("/public/trade_journal.csv")
-      .then((response) => response.text())
-      .then((csvText) => {
-        Papa.parse<DataRow>(csvText, {
-          header: true,
-          skipEmptyLines: true,
-          complete: (results: ParseResult<DataRow>) => {
-            setData(results.data);
-          },
-          error: (error) => {
-            console.error("Error parsing csv:", error);
-          },
-        });
-      })
-      .catch((error) => {
-        console.error("Error fetching csv:", error);
-      });
-  }, []);
-
+export default function TransactionTable({ data, onEdit, onDelete }) {
   return (
     <Card>
       <table className="min-w-full overflow-hidden">
@@ -84,6 +34,10 @@ export default function TransactionTable({ onEdit }) {
               </td>
               <td className="px-4 py-2">{row.currency}</td>
               <td className="px-4 py-2">{row.note}</td>
+              <td className="px-4 py-2">
+                <button onClick={() => onEdit(index)}>Edit</button>
+                <button onClick={() => onDelete(index)}>Delete</button>
+              </td>
             </tr>
           ))}
           {data.length === 0 && (
