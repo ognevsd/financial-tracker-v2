@@ -5,15 +5,15 @@ CREATE TABLE IF NOT EXISTS currency (
     code TEXT NOT NULL UNIQUE CHECK(length(code) = 3), -- Code in ISO format e.g. 'USD', 'EUR'
     name TEXT NOT NULL,
     decimals INTEGER DEFAULT 2 CHECK(decimals >= 0 AND decimals <= 8),
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    created_at TEXT NOT NULL DEFAULT current_timestamp,
+    updated_at TEXT NOT NULL DEFAULT current_timestamp
 );
 
 CREATE TABLE IF NOT EXISTS operation (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL UNIQUE, -- e.g. "buy", "sell", "dividend"
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    created_at TEXT NOT NULL DEFAULT current_timestamp,
+    updated_at TEXT NOT NULL DEFAULT current_timestamp
 );
 
 CREATE TABLE IF NOT EXISTS asset (
@@ -25,8 +25,8 @@ CREATE TABLE IF NOT EXISTS asset (
     commodity TEXT,
     currency_id TEXT NOT NULL REFERENCES currency(id),
     rep_multiplicator INTEGER, -- e.g. in thousands == 1000, in millions = 1000000
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    created_at TEXT NOT NULL DEFAULT current_timestamp,
+    updated_at TEXT NOT NULL DEFAULT current_timestamp
 );
 
 CREATE TABLE IF NOT EXISTS "transaction" (
@@ -39,8 +39,8 @@ CREATE TABLE IF NOT EXISTS "transaction" (
     price INTEGER NOT NULL CHECK(price >= 0), -- total in smallest unit (e.g. cents), to avoid floating point
     currency_id TEXT NOT NULL REFERENCES currency(id),
     note TEXT,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    created_at TEXT NOT NULL DEFAULT current_timestamp,
+    updated_at TEXT NOT NULL DEFAULT current_timestamp
 );
 -- +goose StatementEnd
 
