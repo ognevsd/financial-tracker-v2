@@ -15,6 +15,7 @@ export default function TransactionTable({ data, onEdit, onDelete }) {
             <th className="px-4 py-2">Total Spent</th>
             <th className="px-4 py-2">Currency</th>
             <th className="px-4 py-2">Note</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
