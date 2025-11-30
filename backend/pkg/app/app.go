@@ -17,6 +17,7 @@ const StaticFiles string = "../frontend/dist"
 type Application struct {
 	Logger             *log.Logger
 	TransactionHandler *api.TransactionHandler
+	CurrencyHandler    *api.CurrencyHandler
 	DB                 *sql.DB
 }
 
@@ -31,13 +32,16 @@ func New() (*Application, error) {
 		panic(err)
 	}
 	// stores will go here
+	currencyStore := store.NewSqliteCurrencyStore(sqliteDB)
 
 	// handlers will go here
 	transactionHandler := api.NewTransactionHandler()
+	currencyHandler := api.NewCurrencyHandler(currencyStore)
 
 	app := &Application{
 		Logger:             logger,
 		TransactionHandler: transactionHandler,
+		CurrencyHandler:    currencyHandler,
 		DB:                 sqliteDB,
 	}
 

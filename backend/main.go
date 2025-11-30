@@ -19,12 +19,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	app.DB.Close()
+	defer app.DB.Close()
 
 	router := routes.SetUpRoutes(app)
-
-	// Catch-all path should be last, for details check Go's ServeMux
-	// http.HandleFunc("/", ServeStaticFiles)
 
 	server := &http.Server{
 		Addr:           fmt.Sprintf(":%d", port),
