@@ -5,17 +5,28 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/ognevsd/financial-tracker-v2/pkg/api"
 )
 
 const StaticFiles string = "../frontend/dist"
 
 type Application struct {
-	Logger *log.Logger
+	Logger             *log.Logger
+	TransactionHandler *api.TransactionHandler
 }
 
 func New() (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
-	app := &Application{Logger: logger}
+	// stores will go here
+
+	// handlers will go here
+	transactionHandler := api.NewTransactionHandler()
+
+	app := &Application{
+		Logger:             logger,
+		TransactionHandler: transactionHandler,
+	}
 
 	return app, nil
 }
