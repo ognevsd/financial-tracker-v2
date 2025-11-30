@@ -4,31 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/ognevsd/financial-tracker-v2/pkg/app"
 )
-
-const StaticFiles string = "../frontend/dist"
-
-func HealthCheck(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "OK\n")
-}
-
-func ServeStaticFiles(w http.ResponseWriter, r *http.Request) {
-	fs := http.FileServer(http.Dir(StaticFiles))
-
-	filePath := StaticFiles + r.URL.Path
-
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		http.ServeFile(w, r, StaticFiles)
-		return
-	}
-
-	http.StripPrefix("/", fs).ServeHTTP(w, r)
-
-}
 
 func main() {
 	var port int
