@@ -1,12 +1,14 @@
 package app
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/ognevsd/financial-tracker-v2/pkg/api"
+	"github.com/ognevsd/financial-tracker-v2/pkg/store"
 )
 
 const StaticFiles string = "../frontend/dist"
@@ -14,10 +16,15 @@ const StaticFiles string = "../frontend/dist"
 type Application struct {
 	Logger             *log.Logger
 	TransactionHandler *api.TransactionHandler
+	DB                 *sql.DB
 }
 
 func New() (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	sqliteDB, err := store.Open()
+	if err != nil {
+		return nil, err
+	}
 	// stores will go here
 
 	// handlers will go here
@@ -26,6 +33,7 @@ func New() (*Application, error) {
 	app := &Application{
 		Logger:             logger,
 		TransactionHandler: transactionHandler,
+		DB:                 sqliteDB,
 	}
 
 	return app, nil
