@@ -9,6 +9,7 @@ export default function Navigation() {
   const navItems: NavItems[] = [
     { to: "/transactions", label: "Transactions" },
     { to: "/dividend-yield", label: "Dividend Yield" },
+    { to: "/currency", label: "Currencies" },
   ];
   return (
     <nav className="fixed top-0 left-0 right-0 h-16 border-b m-auto px-4 bg-white">
