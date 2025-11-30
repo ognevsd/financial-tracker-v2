@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ognevsd/financial-tracker-v2/migrations"
 	"github.com/ognevsd/financial-tracker-v2/pkg/api"
 	"github.com/ognevsd/financial-tracker-v2/pkg/store"
 )
@@ -24,6 +25,10 @@ func New() (*Application, error) {
 	sqliteDB, err := store.Open()
 	if err != nil {
 		return nil, err
+	}
+	err = store.MigrateFS(sqliteDB, migrations.FS, ".")
+	if err != nil {
+		panic(err)
 	}
 	// stores will go here
 
