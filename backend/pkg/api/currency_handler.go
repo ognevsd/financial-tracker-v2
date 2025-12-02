@@ -37,3 +37,16 @@ func (ch *CurrencyHandler) HandleAddCurrency(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(createdCurrency)
 }
+
+func (ch *CurrencyHandler) GetAllCurrencies(w http.ResponseWriter, r *http.Request) {
+	currencies, err := ch.currencyStore.GetAllCurrencies()
+	if err != nil {
+		fmt.Println("ERROR: GetAllCurrencies: %w", err)
+		http.Error(w, "Failed to get all currencies", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(currencies)
+}

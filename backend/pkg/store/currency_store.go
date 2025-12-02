@@ -24,6 +24,7 @@ func NewSqliteCurrencyStore(db *sql.DB) *SqliteCurrencyStore {
 type CurrencyStore interface {
 	AddCurrency(*Currency) (*Currency, error)
 	GetCurrencyById(id string) (*Currency, error)
+	GetAllCurrencies() ([]*Currency, error)
 }
 
 func (sqlite *SqliteCurrencyStore) AddCurrency(cur *Currency) (*Currency, error) {
@@ -61,4 +62,30 @@ func (sqlite *SqliteCurrencyStore) AddCurrency(cur *Currency) (*Currency, error)
 func (sqlite *SqliteCurrencyStore) GetCurrencyById(id string) (*Currency, error) {
 	currecny := &Currency{}
 	return currecny, nil
+}
+
+func (sqlite *SqliteCurrencyStore) GetAllCurrencies() ([]*Currency, error) {
+	query := `SELECT id, code, name, decimals FROM currency`
+	rows, err := sqlite.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var currencies []*Currency
+
+	for rows.Next() {
+		cur := &Currency{}
+		err := rows.Scan(&cur.ID, &cur.Code, &cur.Name, &cur.Decimals)
+		if err != nil {
+			return nil, err
+		}
+		currencies = append(currencies, cur)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return currencies, nil
 }
