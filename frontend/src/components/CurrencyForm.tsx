@@ -1,5 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { addCurrency } from "../api/currency";
+import Button from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "@radix-ui/react-label";
 
 export default function CurrencyForm() {
   const mutation = useMutation({
@@ -17,16 +20,13 @@ export default function CurrencyForm() {
   return (
     <form onSubmit={mutation.mutate}>
       <div>
-        <label htmlFor="code" className="block">
-          Code
-        </label>
-        <input
-          className="border rounded px-2 py-1 min-w-sm"
+        <Label htmlFor="code">Code</Label>
+        <Input
           type="text"
           id="code"
           name="code"
           required
-          placeholder="e.g. USD, EUR"
+          placeholder="e.g. EUR, USD"
           minLength={3}
           maxLength={3}
         />
@@ -59,7 +59,9 @@ export default function CurrencyForm() {
           max={8}
         />
       </div>
-      <button type="submit">Add Currency</button>
+      <Button type="button" variant="default">
+        Add Currency
+      </Button>
     </form>
   );
 }
