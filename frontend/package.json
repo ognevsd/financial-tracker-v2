@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.8",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-query": "^5.90.11",
     "@tanstack/react-router": "^1.136.5",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.553.0",
     "papaparse": "^5.5.3",
