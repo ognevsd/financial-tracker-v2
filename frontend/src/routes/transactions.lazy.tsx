@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState, type Key } from "react";
 import Modal from "../components/Modal";
 
 import Papa, { ParseResult } from "papaparse";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useEscModalClose } from "../hooks/useEscModalClose";
 
 export const Route = createLazyFileRoute("/transactions")({
   component: RouteComponent,
@@ -48,7 +50,7 @@ const defaultForm = {
 };
 
 function RouteComponent() {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setModalOpen] = useState<boolean>(false);
   const [formData, setFormData] = useState(defaultForm);
   const [data, setData] = useState<DataRow[]>([]);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -110,35 +112,8 @@ function RouteComponent() {
       });
   }, []);
 
-  // Disabling scroll when modal is open
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-    }
-
-    // Cleanup on unmount
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
-  }, [isModalOpen]);
-
-  // Close modal when Esc is clicked
-  useEffect(() => {
-    const handleEscClick = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setModalOpen(false);
-      }
-    };
-    if (isModalOpen) {
-      document.addEventListener("keydown", handleEscClick);
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleEscClick);
-    };
-  }, [isModalOpen]);
+  useLockBodyScroll(isModalOpen);
+  useEscModalClose(isModalOpen, () => setModalOpen(false));
 
   return (
     <div className="space-y-4">
