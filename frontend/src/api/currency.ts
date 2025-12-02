@@ -28,3 +28,17 @@ export async function addCurrency(
 
   return resp.json();
 }
+
+export async function getAllCurrencies(): Promise<Currency[]> {
+  const resp = await fetch("/api/currency", {
+    headers: {
+      "Content-Type": "applicaiton/json",
+    },
+  });
+
+  if (!resp.ok) {
+    throw new Error("Network response not ok.");
+  }
+
+  return resp.json();
+}
