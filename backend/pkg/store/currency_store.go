@@ -25,6 +25,7 @@ type CurrencyStore interface {
 	AddCurrency(*Currency) (*Currency, error)
 	GetCurrencyById(id string) (*Currency, error)
 	GetAllCurrencies() ([]*Currency, error)
+	UpdateCurrency(currency *Currency) error
 }
 
 func (sqlite *SqliteCurrencyStore) AddCurrency(cur *Currency) (*Currency, error) {
@@ -73,9 +74,6 @@ func (sqlite *SqliteCurrencyStore) GetCurrencyById(id string) (*Currency, error)
 		&currecny.Name,
 		&currecny.Decimals,
 	)
-	if err == sql.ErrNoRows {
-		return nil, err
-	}
 	if err != nil {
 		return nil, err
 	}
@@ -107,4 +105,39 @@ func (sqlite *SqliteCurrencyStore) GetAllCurrencies() ([]*Currency, error) {
 	}
 
 	return currencies, nil
+}
+
+func (sqlite *SqliteCurrencyStore) UpdateCurrency(currency *Currency) error {
+	tx, err := sqlite.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	query :=
+		`UPDATE currency
+		SET code = $1, name = $2, decimals = $3
+		WHERE id = $4
+		`
+	result, err := tx.Exec(
+		query,
+		currency.Code,
+		currency.Name,
+		currency.Decimals,
+		currency.ID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return tx.Commit()
 }
