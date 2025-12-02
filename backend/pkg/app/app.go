@@ -36,7 +36,7 @@ func New() (*Application, error) {
 
 	// handlers will go here
 	transactionHandler := api.NewTransactionHandler()
-	currencyHandler := api.NewCurrencyHandler(currencyStore)
+	currencyHandler := api.NewCurrencyHandler(currencyStore, logger)
 
 	app := &Application{
 		Logger:             logger,

@@ -61,6 +61,25 @@ func (sqlite *SqliteCurrencyStore) AddCurrency(cur *Currency) (*Currency, error)
 
 func (sqlite *SqliteCurrencyStore) GetCurrencyById(id string) (*Currency, error) {
 	currecny := &Currency{}
+	query :=
+		`SELECT id, code, name, decimals
+		FROM currency
+		WHERE id = $1
+		`
+
+	err := sqlite.db.QueryRow(query, id).Scan(
+		&currecny.ID,
+		&currecny.Code,
+		&currecny.Name,
+		&currecny.Decimals,
+	)
+	if err == sql.ErrNoRows {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+
 	return currecny, nil
 }
 
