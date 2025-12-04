@@ -10,6 +10,7 @@ export default function Navigation() {
     { to: "/transactions", label: "Transactions" },
     { to: "/dividend-yield", label: "Dividend Yield" },
     { to: "/currency", label: "Currencies" },
+    { to: "/operations", label: "Operation"}
   ];
   return (
     <nav className="fixed top-0 left-0 right-0 h-16 border-b m-auto px-4 bg-white z-100">
