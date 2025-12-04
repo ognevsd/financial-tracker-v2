@@ -29,14 +29,14 @@ func (ch *CurrencyHandler) HandleAddCurrency(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		fmt.Println(err)
 		ch.logger.Printf("ERROR: HandleAddCurrency: %v", err)
-		http.Error(w, "Failed to add currency", http.StatusInternalServerError)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Failed to parse json body: %v", err)})
 		return
 	}
 
 	createdCurrency, err := ch.currencyStore.AddCurrency(&currency)
 	if err != nil {
 		ch.logger.Printf("ERROR: HandleAddCurrency: %v", err)
-		http.Error(w, "Failed to add currency", http.StatusInternalServerError)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Failed to add currency: %v", err)})
 		return
 	}
 
@@ -86,15 +86,16 @@ func (ch *CurrencyHandler) UpdateCurrency(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		ch.logger.Printf("ERROR: UpdateCurrency: %v", err)
 		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "invalid currency id"})
+		return
 	}
 	existingCurrency, err := ch.currencyStore.GetCurrencyById(id)
 	if err == sql.ErrNoRows {
-		ch.logger.Printf("ERROR: Update Currency: %v", err)
+		ch.logger.Printf("ERROR: UpdateCurrency: %v", err)
 		utils.WriteJSON(w, http.StatusNotFound, utils.Envelope{"error": "Currency not found"})
 		return
 	}
 	if err != nil {
-		ch.logger.Printf("ERROR: Update Currency: %v", err)
+		ch.logger.Printf("ERROR: UpdateCurrency: %v", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "internal server error"})
 		return
 	}
