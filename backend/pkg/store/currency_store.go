@@ -26,6 +26,7 @@ type CurrencyStore interface {
 	GetCurrencyById(id string) (*Currency, error)
 	GetAllCurrencies() ([]*Currency, error)
 	UpdateCurrency(currency *Currency) error
+	DeleteCurrency(id string) error
 }
 
 func (sqlite *SqliteCurrencyStore) AddCurrency(cur *Currency) (*Currency, error) {
@@ -140,4 +141,23 @@ func (sqlite *SqliteCurrencyStore) UpdateCurrency(currency *Currency) error {
 	}
 
 	return tx.Commit()
+}
+
+func (sqlite *SqliteCurrencyStore) DeleteCurrency(id string) error {
+	query :=
+		`DELETE FROM currency
+		WHERE id = $1
+		`
+	result, err := sqlite.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+	rowsAffected, nil := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
 }

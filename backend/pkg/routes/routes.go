@@ -15,7 +15,9 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 
 	r.Get("/api/currency", app.CurrencyHandler.GetAllCurrencies)
 	r.Get("/api/currency/{id}", app.CurrencyHandler.GetCurrencyById)
+	r.Put("/api/currency/{id}", app.CurrencyHandler.UpdateCurrency)
 	r.Post("/api/currency", app.CurrencyHandler.HandleAddCurrency)
+	r.Delete("/api/currency/{id}", app.CurrencyHandler.DeleteCurrencyById)
 
 	r.NotFound(app.ServeStaticFiles)
 

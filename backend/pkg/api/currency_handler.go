@@ -135,3 +135,24 @@ func (ch *CurrencyHandler) UpdateCurrency(w http.ResponseWriter, r *http.Request
 
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"currency": existingCurrency})
 }
+
+func (ch *CurrencyHandler) DeleteCurrencyById(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.ReadIdParam(r)
+	if err != nil {
+		ch.logger.Printf("ERROR: DeleteCurrency: %v", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid currency id"})
+		return
+	}
+	err = ch.currencyStore.DeleteCurrency(id)
+	if err == sql.ErrNoRows {
+		utils.WriteJSON(w, http.StatusNotFound, utils.Envelope{"error": "Currency not found"})
+		return
+	}
+	if err != nil {
+		ch.logger.Printf("ERROR: DeleteCurrency: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error deleting currency: %v", err)})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
