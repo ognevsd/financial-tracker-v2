@@ -1,4 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Input } from "./ui/input";
+import { Select, SelectOption } from "./ui/select";
 
 export default function TransactionForm({
   formData,
@@ -45,10 +47,10 @@ export default function TransactionForm({
               <label htmlFor="date" className="block font-semibold mb-1">
                 Date
               </label>
-              <input
+              <Input
                 type="date"
                 id="date"
-                className="border rounded px-2 py-1 w-full"
+                // className="border rounded px-2 py-1 w-full"
                 value={formData.date}
                 required
                 onChange={(e) => {
@@ -82,9 +84,9 @@ export default function TransactionForm({
               <label htmlFor="type" className="block font-semibold mb-1">
                 Type
               </label>
-              <select
+              <Select
                 id="type"
-                className="border rounded px-2 py-1 w-full"
+                className="w-full"
                 value={formData.type}
                 required
                 onChange={(e) => {
@@ -94,9 +96,9 @@ export default function TransactionForm({
                   }));
                 }}
               >
-                <option value="share">Share</option>
-                <option value="option">Option</option>
-              </select>
+                <SelectOption value="share">Share</SelectOption>
+                <SelectOption value="option">Option</SelectOption>
+              </Select>
             </div>
             <div>
               <label htmlFor="quantity" className="block font-semibold mb-1">

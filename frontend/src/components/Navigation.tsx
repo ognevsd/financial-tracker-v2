@@ -12,7 +12,7 @@ export default function Navigation() {
     { to: "/currency", label: "Currencies" },
   ];
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 border-b m-auto px-4 bg-white">
+    <nav className="fixed top-0 left-0 right-0 h-16 border-b m-auto px-4 bg-white z-100">
       <ul className="h-16 items-center flex flex-row gap-4">
         {navItems.map((item) => (
           <li key={item.to}>

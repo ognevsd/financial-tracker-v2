@@ -1,67 +1,97 @@
-import { useMutation } from "@tanstack/react-query";
-import { addCurrency } from "../api/currency";
 import Button from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "@radix-ui/react-label";
+import type { CurrencyFormData } from "../types/currency";
+import type { Dispatch, SetStateAction } from "react";
 
-export default function CurrencyForm() {
-  const mutation = useMutation({
-    mutationFn: function (e) {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      return addCurrency(
-        formData.get("code"),
-        formData.get("name"),
-        formData.get("decimals"),
-      );
-    },
-  });
+interface CurrencyFormProps {
+  formData: CurrencyFormData;
+  setFormData: Dispatch<SetStateAction<CurrencyFormData>>;
+  onSubmit: () => void;
+  onClear: () => void;
+  isEdit: boolean;
+}
 
+export default function CurrencyForm({
+  formData,
+  setFormData,
+  onSubmit,
+  onClear,
+  isEdit,
+}: CurrencyFormProps) {
   return (
-    <form onSubmit={mutation.mutate}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit();
+      }}
+      className="max-w-xl space-y-2"
+    >
       <div>
-        <Label htmlFor="code">Code</Label>
-        <Input
-          type="text"
-          id="code"
-          name="code"
-          required
-          placeholder="e.g. EUR, USD"
-          minLength={3}
-          maxLength={3}
-        />
+        <div>
+          <Label htmlFor="code">Code</Label>
+          <Input
+            type="text"
+            id="code"
+            name="code"
+            required
+            placeholder="e.g. EUR, USD"
+            minLength={3}
+            maxLength={3}
+            value={formData.code}
+            onChange={(e) =>
+              setFormData((prevState) => ({
+                ...prevState,
+                code: e.target.value,
+              }))
+            }
+          />
+        </div>
+        <div>
+          <Label htmlFor="name">Name</Label>
+          <Input
+            type="text"
+            id="name"
+            name="name"
+            required
+            placeholder="e.g. United States Dollar"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData((prevState) => ({
+                ...prevState,
+                name: e.target.value,
+              }))
+            }
+          />
+        </div>
+        <div>
+          <Label htmlFor="decimals">Decimals</Label>
+          <Input
+            type="number"
+            id="decimals"
+            name="decimals"
+            required
+            placeholder="e.g. 2"
+            min={0}
+            max={8}
+            value={formData.decimals}
+            onChange={(e) =>
+              setFormData((prevState) => ({
+                ...prevState,
+                decimals: Number(e.target.value),
+              }))
+            }
+          />
+        </div>
       </div>
-      <div>
-        <label htmlFor="name" className="block">
-          Name
-        </label>
-        <input
-          className="border rounded px-2 py-1 min-w-sm"
-          type="text"
-          id="name"
-          name="name"
-          required
-          placeholder="e.g. United States Dollar"
-        />
+      <div className="space-x-2 flex justify-end">
+        <Button type="submit" variant="default">
+          {isEdit ? "Save Changes" : "Add Currency"}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onClear}>
+          Clear
+        </Button>
       </div>
-      <div>
-        <label htmlFor="decimals" className="block">
-          Decimals
-        </label>
-        <input
-          className="border rounded px-2 py-1 min-w-sm"
-          type="number"
-          id="decimals"
-          name="decimals"
-          required
-          placeholder="e.g. 2"
-          min={0}
-          max={8}
-        />
-      </div>
-      <Button type="button" variant="default">
-        Add Currency
-      </Button>
     </form>
   );
 }
