@@ -102,6 +102,7 @@ function RouteComponent() {
         message: `Currency ${formData.code} updated successfully`,
         type: "success",
       });
+      setEditCurrencyId(null);
       setFormData(defaultFormData);
     },
     onError: (error) => {

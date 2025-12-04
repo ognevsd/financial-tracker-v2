@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/ognevsd/financial-tracker-v2/pkg/store"
 	"github.com/ognevsd/financial-tracker-v2/pkg/utils"
@@ -32,6 +33,7 @@ func (ch *CurrencyHandler) HandleAddCurrency(w http.ResponseWriter, r *http.Requ
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Failed to parse json body: %v", err)})
 		return
 	}
+	currency.Code = strings.ToUpper(currency.Code)
 
 	createdCurrency, err := ch.currencyStore.AddCurrency(&currency)
 	if err != nil {
@@ -118,7 +120,7 @@ func (ch *CurrencyHandler) UpdateCurrency(w http.ResponseWriter, r *http.Request
 	}
 
 	if updateCurrencyRequest.Code != nil {
-		existingCurrency.Code = *updateCurrencyRequest.Code
+		existingCurrency.Code = strings.ToUpper(*updateCurrencyRequest.Code)
 	}
 	if updateCurrencyRequest.Name != nil {
 		existingCurrency.Name = *updateCurrencyRequest.Name
@@ -131,6 +133,7 @@ func (ch *CurrencyHandler) UpdateCurrency(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		ch.logger.Printf("ERROR: UpdateCurrecny: %v", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Internal server error"})
+		return
 	}
 
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"currency": existingCurrency})
