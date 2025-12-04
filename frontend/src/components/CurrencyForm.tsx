@@ -1,8 +1,8 @@
 import Button from "./ui/button";
 import { Input } from "./ui/input";
-import { Label } from "@radix-ui/react-label";
 import type { CurrencyFormData } from "../types/currency";
 import type { Dispatch, SetStateAction } from "react";
+import { Label } from "./ui/label";
 
 interface CurrencyFormProps {
   formData: CurrencyFormData;
