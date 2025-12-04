@@ -25,7 +25,7 @@ type CurrencyStore interface {
 	AddCurrency(*Currency) (*Currency, error)
 	GetCurrencyById(id string) (*Currency, error)
 	GetAllCurrencies() ([]*Currency, error)
-	UpdateCurrency(currency *Currency) error
+	UpdateCurrency(*Currency) error
 	DeleteCurrency(id string) error
 }
 
