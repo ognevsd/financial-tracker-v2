@@ -11,7 +11,7 @@ import { type ToastData } from "../types/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Toast from "../components/Toast";
 import { getAllCurrencies } from "../api/currency";
-import { addTransaction } from "../api/transaction";
+import { addTransaction, getTransactionById } from "../api/transaction";
 
 export const Route = createLazyFileRoute("/transactions")({
   component: RouteComponent,
@@ -22,8 +22,8 @@ const defaultForm: TransactionFormData = {
   date: new Date().toISOString().split("T")[0],
   ticker: "",
   type: "",
-  quantity: 0,
-  price: 0,
+  quantity: "",
+  price: "",
   currency: "",
   note: "",
 };
@@ -78,10 +78,30 @@ function RouteComponent() {
     },
   });
 
+  const getTransactionByIdMutation = useMutation({
+    mutationFn: (id: string) => getTransactionById(id),
+    onSuccess: (data) => {
+      setFormData(data.transaction);
+    },
+    onError: (error) => {
+      setToastInfo({
+        show: true,
+        message: error.message,
+        type: "error",
+      });
+    },
+  });
+
+  const onTransactionEdit = (id: string) => {
+    setEditTransactionId(id);
+    getTransactionByIdMutation.mutate(id);
+    setModalOpen(true);
+  };
+
   function submitForm() {
     console.log(formData);
     if (editTransactionId !== null) {
-      updateTransaction();
+      // updateTransaction();
       console.log("Yo");
     } else {
       addTransactionMutation.mutate();
@@ -101,7 +121,7 @@ function RouteComponent() {
         onClear={clearForm}
         isEdit={false}
       />
-      <TransactionTable />
+      <TransactionTable onEdit={onTransactionEdit} />
       <Toast
         show={toastInfo.show}
         type={toastInfo.type}

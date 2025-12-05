@@ -57,3 +57,21 @@ export async function addTransaction(
 
   return resp.json();
 }
+
+export async function getTransactionById(
+  id: string,
+): Promise<TransactionResponse> {
+  const resp = await fetch(`/api/transaction/${id}`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!resp.ok) {
+    const errData: errorResponse = await resp.json().catch(() => ({}));
+    console.log(errData);
+    throw new Error(errData.error || `API error: ${resp.status}`);
+  }
+
+  return resp.json();
+}

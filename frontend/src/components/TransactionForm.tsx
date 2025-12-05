@@ -180,7 +180,7 @@ export default function TransactionForm({
             onChange={(e) => {
               setFormData((prevState) => ({
                 ...prevState,
-                quantity: Number(e.target.value),
+                quantity: e.target.value === "" ? "" : Number(e.target.value),
               }));
             }}
           />
@@ -202,7 +202,7 @@ export default function TransactionForm({
             onChange={(e) => {
               setFormData((prevState) => ({
                 ...prevState,
-                price: Number(e.target.value),
+                price: e.target.value === "" ? "" : Number(e.target.value),
               }));
             }}
           />
