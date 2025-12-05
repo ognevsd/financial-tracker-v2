@@ -20,8 +20,12 @@ export default function CurrencyTable({
     return <div>Loading...</div>;
   }
 
+  if (data === null) {
+    return <div>No currencies in DB</div>;
+  }
+
   return (
-    <table className="overflow-hidden">
+    <table className="overflow-hidden w-full max-w-xl">
       <thead className="bg-gray-200">
         <tr>
           <th className="px-4 py-2">Code</th>

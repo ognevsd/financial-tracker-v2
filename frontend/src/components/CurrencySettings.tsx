@@ -1,9 +1,7 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
 import CurrencyForm from "../components/CurrencyForm";
 import CurrencyTable from "../components/CurrencyTable";
 import { useState } from "react";
 import Toast, { type ToastType } from "../components/Toast";
-import Button from "../components/ui/button";
 import { type CurrencyFormData } from "../types/currency";
 import Modal from "../components/Modal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,10 +13,6 @@ import {
 } from "../api/currency";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
-
-export const Route = createLazyFileRoute("/currency")({
-  component: RouteComponent,
-});
 
 const defaultFormData: CurrencyFormData = {
   code: "",
@@ -38,7 +32,7 @@ const defaultToastData: ToastData = {
   type: "standard",
 };
 
-function RouteComponent() {
+export default function CurrencySettings() {
   const [formData, setFormData] = useState<CurrencyFormData>(defaultFormData);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [editCurrencyId, setEditCurrencyId] = useState<string | null>(null);

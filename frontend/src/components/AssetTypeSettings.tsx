@@ -1,8 +1,4 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
-import OperationForm from "../components/OperationsForm";
-import type { OperationFormData } from "../types/operations";
 import { useState } from "react";
-import OperationsTable from "../components/OperationsTable";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   addOperation,
@@ -15,17 +11,22 @@ import Toast from "../components/Toast";
 import Modal from "../components/Modal";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
-
-export const Route = createLazyFileRoute("/operations")({
-  component: RouteComponent,
-});
+import AssetTypeForm from "./AssetTypeForm";
+import AssetTypeTable from "./AssetTypeTable";
+import type { AssetTypeFormData } from "../types/assetType";
+import {
+  addAssetType,
+  DeleteAssetTypeById,
+  getAssetTypeById,
+  updateAssetTypeById,
+} from "../api/assetType";
 
 interface ToastData {
   show: boolean;
   message: string;
   type: ToastType;
 }
-const defaultFormData: OperationFormData = {
+const defaultFormData: AssetTypeFormData = {
   id: "",
   name: "",
 };
@@ -35,8 +36,8 @@ const defaultToastData: ToastData = {
   type: "standard",
 };
 
-function RouteComponent() {
-  const [formData, setFormData] = useState<OperationFormData>(defaultFormData);
+export default function AssetTypeSettings() {
+  const [formData, setFormData] = useState<AssetTypeFormData>(defaultFormData);
   const [toastData, setToastData] = useState<ToastData>(defaultToastData);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [editOperationId, setEditOperationId] = useState<string | null>(null);
@@ -54,13 +55,13 @@ function RouteComponent() {
   useLockBodyScroll(showModal);
   useEscModalClose(showModal, onModalClose);
 
-  const addOperationMutation = useMutation({
-    mutationFn: () => addOperation(formData.name),
+  const addAssetTypeMutation = useMutation({
+    mutationFn: () => addAssetType(formData.name),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-operations"] });
+      queryClient.invalidateQueries({ queryKey: ["all-asset-types"] });
       setToastData({
         show: true,
-        message: `Operation ${formData.name} added successfully`,
+        message: `Asset type ${formData.name} added successfully`,
         type: "success",
       });
       setFormData(defaultFormData);
@@ -74,10 +75,10 @@ function RouteComponent() {
     },
   });
 
-  const fetchOperationMutation = useMutation({
-    mutationFn: (id: string) => getOperationById(id),
+  const fetchAssetTypeMutation = useMutation({
+    mutationFn: (id: string) => getAssetTypeById(id),
     onSuccess: (data) => {
-      setFormData(data.operation);
+      setFormData(data.assetType);
     },
     onError: (e) => {
       setToastData({
@@ -88,13 +89,13 @@ function RouteComponent() {
     },
   });
 
-  const editOperationMutation = useMutation({
-    mutationFn: (id: string) => updateOperationById(id, formData.name),
+  const editAssetTypeMutation = useMutation({
+    mutationFn: (id: string) => updateAssetTypeById(id, formData.name),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-operations"] });
+      queryClient.invalidateQueries({ queryKey: ["all-asset-types"] });
       setToastData({
         show: true,
-        message: `Operation ${formData.name} updated`,
+        message: `Asset type ${formData.name} updated`,
         type: "success",
       });
       setEditOperationId(null);
@@ -109,13 +110,13 @@ function RouteComponent() {
     },
   });
 
-  const deleteOperationMutation = useMutation({
-    mutationFn: (id: string) => DeleteOperationById(id),
+  const deleteAssetType = useMutation({
+    mutationFn: (id: string) => DeleteAssetTypeById(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-operations"] });
+      queryClient.invalidateQueries({ queryKey: ["all-asset-types"] });
       setToastData({
         show: true,
-        message: "Operation deleted successfully",
+        message: "Asset type deleted successfully",
         type: "success",
       });
     },
@@ -130,31 +131,31 @@ function RouteComponent() {
 
   const onEditOperation = (id: string) => {
     setEditOperationId(id);
-    fetchOperationMutation.mutate(id);
+    fetchAssetTypeMutation.mutate(id);
     setShowModal(true);
   };
 
-  const submitOperationForm = () => {
+  const submitAssetTypeForm = () => {
     if (editOperationId == null) {
-      addOperationMutation.mutate();
+      addAssetTypeMutation.mutate();
     } else {
-      editOperationMutation.mutate(editOperationId);
+      editAssetTypeMutation.mutate(editOperationId);
     }
     setShowModal(false);
   };
 
   return (
-    <>
-      <OperationForm
+    <div className="space-y-2">
+      <AssetTypeForm
         formData={formData}
         setFormData={setFormData}
-        onSubmit={submitOperationForm}
+        onSubmit={submitAssetTypeForm}
         onClear={clearForm}
         isEdit={false}
       />
-      <OperationsTable
+      <AssetTypeTable
         onEdit={onEditOperation}
-        onDelete={deleteOperationMutation.mutate}
+        onDelete={deleteAssetType.mutate}
       />
       <Toast
         show={toastData.show}
@@ -163,14 +164,14 @@ function RouteComponent() {
         onClose={onToastClose}
       />
       <Modal isOpen={showModal} onClose={onModalClose}>
-        <OperationForm
+        <AssetTypeForm
           formData={formData}
           setFormData={setFormData}
-          onSubmit={submitOperationForm}
+          onSubmit={submitAssetTypeForm}
           onClear={clearForm}
           isEdit={true}
         />
       </Modal>
-    </>
+    </div>
   );
 }

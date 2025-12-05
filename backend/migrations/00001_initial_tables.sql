@@ -16,15 +16,22 @@ CREATE TABLE IF NOT EXISTS operation (
     updated_at TEXT NOT NULL DEFAULT current_timestamp
 );
 
+CREATE TABLE IF NOT EXISTS asset_type (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL UNIQUE, -- e.g. "share", "option", "etf"
+    created_at TEXT NOT NULL DEFAULT current_timestamp,
+    updated_at TEXT NOT NULL DEFAULT current_timestamp
+);
+
 CREATE TABLE IF NOT EXISTS asset (
     id TEXT PRIMARY KEY NOT NULL,
     symbol TEXT NOT NULL, -- e.g. 'AAPL', 'SPY'
     name TEXT NOT NULL,
-    type TEXT NOT NULL, -- e.g. 'stock', 'etf'
+    type TEXT NOT NULL REFERENCES asset_type(id),
     industry TEXT,
     commodity TEXT,
     currency_id TEXT NOT NULL REFERENCES currency(id),
-    rep_multiplicator INTEGER, -- e.g. in thousands == 1000, in millions = 1000000
+    rep_multiplicator INTEGER, -- e.g. in thousands = 1000, in millions = 1000000
     created_at TEXT NOT NULL DEFAULT current_timestamp,
     updated_at TEXT NOT NULL DEFAULT current_timestamp
 );
@@ -48,6 +55,7 @@ CREATE TABLE IF NOT EXISTS "transaction" (
 -- +goose StatementBegin
 DROP TABLE transaction;
 DROP TABLE asset;
+DROP TABLE asset_type;
 DROP TABLE operation;
 DROP TABLE currency;
 -- +goose StatementEnd

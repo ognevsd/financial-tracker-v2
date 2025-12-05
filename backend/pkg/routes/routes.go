@@ -25,6 +25,12 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Post("/api/operation", app.OperationHandler.AddOperation)
 	r.Delete("/api/operation/{id}", app.OperationHandler.DeleteOperation)
 
+	r.Get("/api/assettype", app.AssetTypeHandler.GetAllAssetTypes)
+	r.Get("/api/assettype/{id}", app.AssetTypeHandler.GetAssetTypeById)
+	r.Put("/api/assettype/{id}", app.AssetTypeHandler.UpdateAssetType)
+	r.Post("/api/assettype", app.AssetTypeHandler.AddAssetType)
+	r.Delete("/api/assettype/{id}", app.AssetTypeHandler.DeleteAssetType)
+
 	r.NotFound(app.ServeStaticFiles)
 
 	return r
