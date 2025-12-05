@@ -1,7 +1,7 @@
 import CurrencyForm from "../components/CurrencyForm";
 import CurrencyTable from "../components/CurrencyTable";
 import { useState } from "react";
-import Toast, { type ToastType } from "../components/Toast";
+import Toast from "../components/Toast";
 import { type CurrencyFormData } from "../types/currency";
 import Modal from "../components/Modal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,18 +13,13 @@ import {
 } from "../api/currency";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
+import type { ToastData } from "../types/toast";
 
 const defaultFormData: CurrencyFormData = {
   code: "",
   name: "",
   decimals: 2,
 };
-
-interface ToastData {
-  show: boolean;
-  message: string;
-  type: ToastType;
-}
 
 const defaultToastData: ToastData = {
   show: false,

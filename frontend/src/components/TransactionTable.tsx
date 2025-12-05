@@ -1,6 +1,32 @@
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "./ui/card";
+import { getAllTransactions } from "../api/transaction";
 
-export default function TransactionTable({ data, onEdit, onDelete }) {
+interface TransactionTableProps {
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+export default function TransactionTable({
+  onEdit,
+  onDelete,
+}: TransactionTableProps) {
+  const { isLoading, data } = useQuery({
+    queryFn: getAllTransactions,
+    queryKey: ["all-transactions"],
+    staleTime: 120_000,
+  });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  console.log(data)
+
+  if (data?.transaction === null) {
+    return <div>No transactions in DB</div>;
+  }
+
   return (
     <Card>
       <table className="min-w-full overflow-hidden">
@@ -19,7 +45,7 @@ export default function TransactionTable({ data, onEdit, onDelete }) {
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => (
+          {data?.transaction.map((row, index) => (
             <tr
               key={index}
               className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}

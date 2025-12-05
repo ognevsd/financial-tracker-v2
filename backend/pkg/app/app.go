@@ -37,12 +37,13 @@ func New() (*Application, error) {
 	currencyStore := store.NewSqliteCurrencyStore(sqliteDB)
 	operationStore := store.NewOperationStore(sqliteDB)
 	assetTypeStore := store.NewAssetTypeStore(sqliteDB)
+	transactionStore := store.NewSqliteTransactionStore(sqliteDB)
 
 	// handlers will go here
-	transactionHandler := api.NewTransactionHandler()
 	currencyHandler := api.NewCurrencyHandler(currencyStore, logger)
 	operationHandler := api.NewOperationHandler(operationStore, logger)
 	assetTypeHandler := api.NewAssetTypeHandler(assetTypeStore, logger)
+	transactionHandler := api.NewTransactionHandler(transactionStore, logger)
 
 	app := &Application{
 		Logger:             logger,

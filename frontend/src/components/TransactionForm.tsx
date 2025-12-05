@@ -5,8 +5,17 @@ import { getAllCurrencies } from "../api/currency";
 import { getAllOperations } from "../api/operations";
 import { Label } from "./ui/label";
 import { getAllAssetTypes } from "../api/assetType";
+import Button from "./ui/button";
+import type { TransactionFormData } from "../types/transaction";
+import { useEffect, type Dispatch, type SetStateAction } from "react";
 
-interface TransactionFormProps {}
+interface TransactionFormProps {
+  formData: TransactionFormData;
+  setFormData: Dispatch<SetStateAction<TransactionFormData>>;
+  onSubmit: () => void;
+  onClear: () => void;
+  isEdit: boolean;
+}
 
 export default function TransactionForm({
   formData,
@@ -14,7 +23,7 @@ export default function TransactionForm({
   onSubmit,
   onClear,
   isEdit,
-}) {
+}: TransactionFormProps) {
   const { data: currencies, isPending: isCurrenciesPending } = useQuery({
     queryFn: getAllCurrencies,
     queryKey: ["all-currencies"],
@@ -32,6 +41,40 @@ export default function TransactionForm({
     queryKey: ["all-asset-types"],
     staleTime: 120_000,
   });
+
+  // Default data has empty strings for select, this should be populated with proper ids
+  useEffect(() => {
+    if (
+      formData.currency === "" &&
+      !isCurrenciesPending &&
+      currencies !== null
+    ) {
+      setFormData((prevState) => ({
+        ...prevState,
+        currency: currencies?.[0].id || "",
+      }));
+    }
+    if (
+      formData.operation === "" &&
+      !isOperationsPending &&
+      operations?.operation !== null
+    ) {
+      setFormData((prevState) => ({
+        ...prevState,
+        operation: operations?.operation[0].id || "",
+      }));
+    }
+    if (
+      formData.operation === "" &&
+      !isAssetTypePeding &&
+      assetTypes?.assetType != null
+    ) {
+      setFormData((prevState) => ({
+        ...prevState,
+        type: assetTypes?.assetType[0].id || "",
+      }));
+    }
+  }, [isCurrenciesPending, isOperationsPending, isAssetTypePeding, formData]);
 
   if (isCurrenciesPending || isOperationsPending || isAssetTypePeding) {
     return <div>Loading...</div>;
@@ -127,52 +170,48 @@ export default function TransactionForm({
           </Select>
         </div>
         <div>
-          <label htmlFor="quantity" className="block font-semibold mb-1">
-            Quantity
-          </label>
-          <input
+          <Label htmlFor="quantity">Quantity</Label>
+          <Input
             type="number"
             id="quantity"
             min={0}
-            className="border rounded px-2 py-1 w-full"
             value={formData.quantity}
             required
             onChange={(e) => {
               setFormData((prevState) => ({
                 ...prevState,
-                quantity: e.target.value,
+                quantity: Number(e.target.value),
               }));
             }}
           />
         </div>
         <div>
-          <label htmlFor="price" className="block font-semibold mb-1">
-            {formData.operation === "dividend" ? "Dividend Amount" : "Price"}
-          </label>
-          <input
+          <Label htmlFor="price">
+            {formData.operation ===
+            operations?.operation.find((item) => item.name === "DIVIDEND")?.id
+              ? "Dividend Amount"
+              : "Price"}
+          </Label>
+          <Input
             type="number"
             id="price"
             min={0}
             step="any"
-            className="border rounded px-2 py-1 w-full"
             value={formData.price}
             required
             onChange={(e) => {
               setFormData((prevState) => ({
                 ...prevState,
-                price: e.target.value,
+                price: Number(e.target.value),
               }));
             }}
           />
         </div>
         <div>
-          <label htmlFor="total" className="block font-semibold mb-1">
-            Total Amount
-          </label>
-          <input
+          <Label htmlFor="total">Total Amount</Label>
+          <Input
             type="number"
             id="total"
-            className="border rounded px-2 py-1 w-full"
             value={(formData.price * formData.quantity).toFixed(2)}
             disabled
           />
@@ -198,9 +237,7 @@ export default function TransactionForm({
         </div>
       </div>
       <div>
-        <label htmlFor="note" className="block font-semibold mb-1">
-          Note
-        </label>
+        <Label htmlFor="note">Note</Label>
         <textarea
           id="note"
           className="border rounded px-2 py-1 w-full"
@@ -214,19 +251,20 @@ export default function TransactionForm({
         />
       </div>
       <div className="space-x-2">
-        <button
+        <Button
           type="submit"
           className="border px-4 py-2 rounded hover:bg-gray-200"
         >
           {isEdit ? "Save Changes" : "Add Transaction"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="secondary"
           className="border px-4 py-2 rounded hover:bg-gray-200"
           onClick={onClear}
         >
           Clear
-        </button>
+        </Button>
       </div>
     </form>
   );

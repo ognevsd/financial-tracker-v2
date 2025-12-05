@@ -39,9 +39,9 @@ CREATE TABLE IF NOT EXISTS asset (
 CREATE TABLE IF NOT EXISTS "transaction" (
     id TEXT PRIMARY KEY NOT NULL,
     operation_id TEXT NOT NULL REFERENCES operation(id),
-    symbol TEXT NOT NULL,
+    ticker TEXT NOT NULL,
     date TEXT NOT NULL CHECK(date(date) IS date),
-    type TEXT NOT NULL, -- e.g. 'share', 'option'
+    type TEXT NOT NULL REFERENCES asset_type(id),
     quantity INTEGER NOT NULL CHECK(quantity >= 0),
     price INTEGER NOT NULL CHECK(price >= 0), -- total in smallest unit (e.g. cents), to avoid floating point
     currency_id TEXT NOT NULL REFERENCES currency(id),

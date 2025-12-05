@@ -1,116 +1,93 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import TransactionForm from "../components/TransactionForm";
 import TransactionTable from "../components/TransactionTable";
-import { useEffect, useMemo, useState, type Key } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "../components/Modal";
 
-import Papa, { ParseResult } from "papaparse";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
+import type { TransactionFormData } from "../types/transaction";
+import { type ToastData } from "../types/toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Toast from "../components/Toast";
+import { getAllCurrencies } from "../api/currency";
+import { addTransaction } from "../api/transaction";
 
 export const Route = createLazyFileRoute("/transactions")({
   component: RouteComponent,
 });
 
-const OperationEnum = {
-  Buy: "Buy",
-  Sell: "Sell",
-  Dividend: "Dividend",
-} as const;
-
-type OperationEnum = (typeof OperationEnum)[keyof typeof OperationEnum];
-
-const CurrencyEnum = {
-  USD: "USD",
-  EUR: "EUR",
-  GBP: "GBP",
-} as const;
-type CurrencyEnum = (typeof CurrencyEnum)[keyof typeof CurrencyEnum];
-
-interface DataRow {
-  operation: OperationEnum;
-  ticker: string;
-  date: string;
-  type: string;
-  quantity: number;
-  price: number;
-  currency: CurrencyEnum;
-  note: string;
-}
-
-const defaultForm = {
-  operation: "buy",
+const defaultForm: TransactionFormData = {
+  operation: "",
+  date: new Date().toISOString().split("T")[0],
   ticker: "",
-  date: "",
-  type: "share",
-  quantity: "",
-  price: "",
-  currency: "eur",
+  type: "",
+  quantity: 0,
+  price: 0,
+  currency: "",
   note: "",
 };
 
+const defaultToastData: ToastData = {
+  show: false,
+  type: "standard",
+  message: "",
+};
+
 function RouteComponent() {
+  const [formData, setFormData] = useState<TransactionFormData>(defaultForm);
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
-  const [formData, setFormData] = useState(defaultForm);
-  const [data, setData] = useState<DataRow[]>([]);
-  const [editingIndex, setEditingIndex] = useState(null);
+  const [editTransactionId, setEditTransactionId] = useState<string | null>(
+    null,
+  );
+  const [toastInfo, setToastInfo] = useState<ToastData>(defaultToastData);
 
-  function clearForm() {
-    setFormData(defaultForm);
-  }
-
-  function addTransaction() {
-    setData((prevState) => [...prevState, formData]);
-  }
-  function updateTransaction() {
-    const updated = [...sortedData];
-    updated[editingIndex] = formData;
-    setData(updated);
-    setEditingIndex(null);
+  const queryClient = useQueryClient();
+  const onToastClose = () => setToastInfo(defaultToastData);
+  const clearForm = () => setFormData(defaultForm);
+  const onModalClose = () => {
     setModalOpen(false);
-  }
+    setEditTransactionId(null);
+    clearForm();
+  };
+
+  const { data: currencies, isPending: isCurrenciesPending } = useQuery({
+    queryFn: getAllCurrencies,
+    queryKey: ["all-currencies"],
+    staleTime: 120_000,
+  });
+
+  const addTransactionMutation = useMutation({
+    mutationFn: () => addTransaction(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      setToastInfo({
+        show: true,
+        message: "Transaction added successfully",
+        type: "success",
+      });
+      setEditTransactionId(null);
+      setFormData(defaultForm);
+    },
+    onError: (error) => {
+      setToastInfo({
+        show: true,
+        message: error.message,
+        type: "error",
+      });
+    },
+  });
 
   function submitForm() {
-    if (editingIndex !== null) {
+    console.log(formData);
+    if (editTransactionId !== null) {
       updateTransaction();
+      console.log("Yo");
     } else {
-      addTransaction();
+      addTransactionMutation.mutate();
     }
-    clearForm();
+    // clearForm();
   }
-
-  function editTransaction(index: number) {
-    setFormData(sortedData[index]);
-    setEditingIndex(index);
-    setModalOpen(true);
-  }
-
-  // Sorting data by time
-  const sortedData = useMemo(() => {
-    return [...data].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
-  }, [data]);
-
-  useEffect(() => {
-    fetch("/trade_journal.csv")
-      .then((response) => response.text())
-      .then((csvText) => {
-        Papa.parse<DataRow>(csvText, {
-          header: true,
-          skipEmptyLines: true,
-          complete: (results: ParseResult<DataRow>) => {
-            setData(results.data);
-          },
-          error: (error) => {
-            console.error("Error parsing csv:", error);
-          },
-        });
-      })
-      .catch((error) => {
-        console.error("Error fetching csv:", error);
-      });
-  }, []);
 
   useLockBodyScroll(isModalOpen);
   useEscModalClose(isModalOpen, () => setModalOpen(false));
@@ -124,14 +101,14 @@ function RouteComponent() {
         onClear={clearForm}
         isEdit={false}
       />
-      <TransactionTable data={sortedData} onEdit={editTransaction} />
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          clearForm();
-        }}
-      >
+      <TransactionTable />
+      <Toast
+        show={toastInfo.show}
+        type={toastInfo.type}
+        message={toastInfo.message}
+        onClose={onToastClose}
+      />
+      <Modal isOpen={isModalOpen} onClose={onModalClose}>
         <h2>Edit Transaction</h2>
         <TransactionForm
           formData={formData}
