@@ -12,6 +12,7 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 
 	r.Get("/api/transaction", app.TransactionHandler.GetAllTransactions)
 	r.Get("/api/transaction/{id}", app.TransactionHandler.GetTransactionById)
+	r.Put("/api/transaction/{id}", app.TransactionHandler.UpdateTransaction)
 	r.Post("/api/transaction", app.TransactionHandler.AddTransaction)
 
 	r.Get("/api/currency", app.CurrencyHandler.GetAllCurrencies)

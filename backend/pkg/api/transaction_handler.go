@@ -75,7 +75,7 @@ func (handler *TransactionHandler) GetTransactionById(w http.ResponseWriter, r *
 func (handler *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ReadIdParam(r)
 	if err != nil {
-		handler.logger.Printf("ERROR: api:GetTransactionById get id from slug: %v", err)
+		handler.logger.Printf("ERROR: api:UpdateTransaction get id from slug: %v", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error getting id from slug: %v", err)})
 		return
 	}
@@ -85,8 +85,61 @@ func (handler *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *h
 		return
 	}
 	if err != nil {
-		handler.logger.Printf("ERROR: api:GetTransactionById get transaction: %v", err)
+		handler.logger.Printf("ERROR: api:UpdateTransaction get transaction: %v", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error getting transaction: %v", err)})
 		return
 	}
+
+	var updatedTransaction struct {
+		ID        *string  `json:"id"`
+		Operation *string  `json:"operation"`
+		Date      *string  `json:"date"`
+		Ticker    *string  `json:"ticker"`
+		Type      *string  `json:"type"`
+		Quantity  *int     `json:"quantity"`
+		Price     *float64 `json:"price"`
+		Currency  *string  `json:"currency"`
+		Note      *string  `json:"note"`
+	}
+	err = json.NewDecoder(r.Body).Decode(&updatedTransaction)
+	if err != nil {
+		handler.logger.Printf("ERROR: api:UpdateTransaction decode updated transaction: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error getting transaction: %v", err)})
+		return
+	}
+
+	if updatedTransaction.Operation != nil {
+		existingTransaction.Operation = *updatedTransaction.Operation
+	}
+	if updatedTransaction.Date != nil {
+		existingTransaction.Date = *updatedTransaction.Date
+	}
+	if updatedTransaction.Ticker != nil {
+		existingTransaction.Ticker = *updatedTransaction.Ticker
+	}
+	if updatedTransaction.Type != nil {
+		existingTransaction.Type = *updatedTransaction.Type
+	}
+	if updatedTransaction.Quantity != nil {
+		existingTransaction.Quantity = *updatedTransaction.Quantity
+	}
+	if updatedTransaction.Price != nil {
+		existingTransaction.Price = *updatedTransaction.Price
+	}
+	if updatedTransaction.Currency != nil {
+		existingTransaction.Currency = *updatedTransaction.Currency
+	}
+	if updatedTransaction.Note != nil {
+		existingTransaction.Note = *updatedTransaction.Note
+	}
+
+	err = handler.store.UpdateTransaction(existingTransaction)
+	if err != nil {
+		handler.logger.Printf("ERROR: api:UpdateTransaction update transaction: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error updating transaction: %v", err)})
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"transaction": existingTransaction})
+
 }

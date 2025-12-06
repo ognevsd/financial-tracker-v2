@@ -3,8 +3,8 @@ export interface TransactionFormData {
   date: string;
   ticker: string;
   type: string;
-  quantity: number;
-  price: number;
+  quantity: number | "";
+  price: number | "";
   currency: string;
   note: string;
 }

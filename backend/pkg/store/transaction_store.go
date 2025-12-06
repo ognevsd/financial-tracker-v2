@@ -30,6 +30,7 @@ type TransactionStore interface {
 	AddTransaction(*Transaction) (*Transaction, error)
 	GetAllTransactions() ([]*Transaction, error)
 	GetTransactionById(id string) (*Transaction, error)
+	UpdateTransaction(*Transaction) error
 }
 
 func (store *SqliteTransactionStore) AddTransaction(transaction *Transaction) (*Transaction, error) {

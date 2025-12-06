@@ -11,7 +11,11 @@ import { type ToastData } from "../types/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Toast from "../components/Toast";
 import { getAllCurrencies } from "../api/currency";
-import { addTransaction, getTransactionById } from "../api/transaction";
+import {
+  addTransaction,
+  getTransactionById,
+  updateTransaction,
+} from "../api/transaction";
 
 export const Route = createLazyFileRoute("/transactions")({
   component: RouteComponent,
@@ -92,6 +96,27 @@ function RouteComponent() {
     },
   });
 
+  const updateTransactionMutation = useMutation({
+    mutationFn: (id: string) => updateTransaction(id, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      setToastInfo({
+        show: true,
+        message: "Transaction updated successfully",
+        type: "success",
+      });
+      setEditTransactionId(null);
+      setFormData(defaultForm);
+    },
+    onError: (error) => {
+      setToastInfo({
+        show: true,
+        message: error.message,
+        type: "error",
+      });
+    },
+  });
+
   const onTransactionEdit = (id: string) => {
     setEditTransactionId(id);
     getTransactionByIdMutation.mutate(id);
@@ -99,14 +124,12 @@ function RouteComponent() {
   };
 
   function submitForm() {
-    console.log(formData);
     if (editTransactionId !== null) {
-      // updateTransaction();
-      console.log("Yo");
+      updateTransactionMutation.mutate(editTransactionId);
     } else {
       addTransactionMutation.mutate();
     }
-    // clearForm();
+    setModalOpen(false);
   }
 
   useLockBodyScroll(isModalOpen);

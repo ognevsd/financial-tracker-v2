@@ -75,3 +75,33 @@ export async function getTransactionById(
 
   return resp.json();
 }
+
+export async function updateTransaction(
+  id: string,
+  transaction: TransactionFormData,
+): Promise<TransactionResponse> {
+  const resp = await fetch(`/api/transaction/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      operation: transaction.operation,
+      date: transaction.date,
+      ticker: transaction.ticker,
+      type: transaction.type,
+      quantity: Number(transaction.quantity),
+      price: Number(transaction.price),
+      currency: transaction.currency,
+      note: transaction.note,
+    }),
+  });
+
+  if (!resp.ok) {
+    const errData: errorResponse = await resp.json().catch(() => ({}));
+    console.log(errData);
+    throw new Error(errData.error || `API error: ${resp.status}`);
+  }
+
+  return resp.json();
+}
