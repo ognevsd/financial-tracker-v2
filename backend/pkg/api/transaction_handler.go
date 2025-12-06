@@ -141,5 +141,26 @@ func (handler *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *h
 	}
 
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"transaction": existingTransaction})
+}
+
+func (handler *TransactionHandler) DeleteTransactionById(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.ReadIdParam(r)
+	if err != nil {
+		handler.logger.Printf("ERROR: api:DeleteTransactionById get id from slug: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error getting id from slug: %v", err)})
+		return
+	}
+	err = handler.store.DeleteTransactionById(id)
+	if err == sql.ErrNoRows {
+		utils.WriteJSON(w, http.StatusNotFound, utils.Envelope{"error": "Operation not found"})
+		return
+	}
+	if err != nil {
+		handler.logger.Printf("ERROR: api:DeleteTransactionById delete transaction: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error deleting operation: %v", err)})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 
 }

@@ -31,6 +31,7 @@ type TransactionStore interface {
 	GetAllTransactions() ([]*Transaction, error)
 	GetTransactionById(id string) (*Transaction, error)
 	UpdateTransaction(*Transaction) error
+	DeleteTransactionById(id string) error
 }
 
 func (store *SqliteTransactionStore) AddTransaction(transaction *Transaction) (*Transaction, error) {

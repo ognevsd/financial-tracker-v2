@@ -13,6 +13,7 @@ import Toast from "../components/Toast";
 import { getAllCurrencies } from "../api/currency";
 import {
   addTransaction,
+  deleteTransaction,
   getTransactionById,
   updateTransaction,
 } from "../api/transaction";
@@ -117,6 +118,27 @@ function RouteComponent() {
     },
   });
 
+  const deleteTransactionMutation = useMutation({
+    mutationFn: (id: string) => deleteTransaction(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      setToastInfo({
+        show: true,
+        message: "Transaction deleted successfully",
+        type: "success",
+      });
+      setEditTransactionId(null);
+      setFormData(defaultForm);
+    },
+    onError: (error) => {
+      setToastInfo({
+        show: true,
+        message: error.message,
+        type: "error",
+      });
+    },
+  });
+
   const onTransactionEdit = (id: string) => {
     setEditTransactionId(id);
     getTransactionByIdMutation.mutate(id);
@@ -144,7 +166,10 @@ function RouteComponent() {
         onClear={clearForm}
         isEdit={false}
       />
-      <TransactionTable onEdit={onTransactionEdit} />
+      <TransactionTable
+        onEdit={onTransactionEdit}
+        onDelete={deleteTransactionMutation.mutate}
+      />
       <Toast
         show={toastInfo.show}
         type={toastInfo.type}

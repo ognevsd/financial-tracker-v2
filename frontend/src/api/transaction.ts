@@ -105,3 +105,15 @@ export async function updateTransaction(
 
   return resp.json();
 }
+
+export async function deleteTransaction(id: string) {
+  const resp = await fetch(`/api/transaction/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!resp.ok) {
+    const errData: errorResponse = await resp.json().catch(() => ({}));
+    console.log(errData);
+    throw new Error(errData.error || `API error: ${resp.status}`);
+  }
+}
