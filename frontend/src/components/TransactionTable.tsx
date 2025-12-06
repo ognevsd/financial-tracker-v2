@@ -4,21 +4,36 @@ import { getAllTransactions } from "../api/transaction";
 import { getAllCurrencies } from "../api/currency";
 import { getAllOperations } from "../api/operations";
 import { getAllAssetTypes } from "../api/assetType";
+import { useMemo, useState } from "react";
+import { Select, SelectOption } from "./ui/select";
 
 interface TransactionTableProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
+type OrderOption = "New First" | "Old First";
+
 export default function TransactionTable({
   onEdit,
   onDelete,
 }: TransactionTableProps) {
+  const [sortOrder, setSortOrder] = useState<OrderOption>("New First");
   const { isLoading, data } = useQuery({
     queryFn: getAllTransactions,
     queryKey: ["all-transactions"],
     staleTime: 120_000,
   });
+
+  const sortedData = useMemo(() => {
+    if (!data?.transaction) return [];
+    return [...data.transaction].sort((a, b) => {
+      if (sortOrder == "New First") {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+  }, [data, sortOrder]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -29,7 +44,20 @@ export default function TransactionTable({
   }
 
   return (
-    <Card>
+    <>
+      <div>
+        <Select
+          value={sortOrder}
+          onChange={(e) =>
+            setSortOrder(
+              e.target.value === "Old First" ? "Old First" : "New First",
+            )
+          }
+        >
+          <SelectOption value="New First">New First</SelectOption>
+          <SelectOption value="Old First">Old First</SelectOption>
+        </Select>
+      </div>
       <table className="min-w-full overflow-hidden">
         <thead className="bg-gray-200 text-left">
           <tr>
@@ -46,7 +74,7 @@ export default function TransactionTable({
           </tr>
         </thead>
         <tbody>
-          {data?.transaction.map((row, index) => (
+          {sortedData.map((row, index) => (
             <tr
               key={index}
               className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
@@ -72,6 +100,6 @@ export default function TransactionTable({
           ))}
         </tbody>
       </table>
-    </Card>
+    </>
   );
 }
