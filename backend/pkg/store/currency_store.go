@@ -83,7 +83,7 @@ func (sqlite *SqliteCurrencyStore) GetCurrencyById(id string) (*Currency, error)
 }
 
 func (sqlite *SqliteCurrencyStore) GetAllCurrencies() ([]*Currency, error) {
-	query := `SELECT id, code, name, decimals FROM currency`
+	query := `SELECT id, code, name, decimals FROM currency ORDER BY name ASC`
 	rows, err := sqlite.db.Query(query)
 	if err != nil {
 		return nil, err
