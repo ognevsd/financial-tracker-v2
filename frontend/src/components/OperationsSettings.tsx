@@ -9,11 +9,11 @@ import {
   getOperationById,
   updateOperationById,
 } from "../api/operations";
-import type { ToastType } from "../components/Toast";
 import Toast from "../components/Toast";
 import Modal from "../components/Modal";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
+import type { ToastType } from "../types/toast";
 
 interface ToastData {
   show: boolean;

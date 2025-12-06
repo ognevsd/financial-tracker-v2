@@ -1,4 +1,4 @@
-import type { ToastType } from "../components/Toast";
+export type ToastType = "standard" | "error" | "success";
 
 export interface ToastData {
   show: boolean;

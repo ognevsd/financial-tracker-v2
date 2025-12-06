@@ -1,9 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card } from "./ui/card";
 import { getAllTransactions } from "../api/transaction";
-import { getAllCurrencies } from "../api/currency";
-import { getAllOperations } from "../api/operations";
-import { getAllAssetTypes } from "../api/assetType";
 import { useMemo, useState } from "react";
 import { Select, SelectOption } from "./ui/select";
 

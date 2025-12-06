@@ -1,16 +1,15 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import TransactionForm from "../components/TransactionForm";
 import TransactionTable from "../components/TransactionTable";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Modal from "../components/Modal";
 
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
 import type { TransactionFormData } from "../types/transaction";
 import { type ToastData } from "../types/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Toast from "../components/Toast";
-import { getAllCurrencies } from "../api/currency";
 import {
   addTransaction,
   deleteTransaction,
@@ -55,12 +54,6 @@ function RouteComponent() {
     setEditTransactionId(null);
     clearForm();
   };
-
-  const { data: currencies, isPending: isCurrenciesPending } = useQuery({
-    queryFn: getAllCurrencies,
-    queryKey: ["all-currencies"],
-    staleTime: 120_000,
-  });
 
   const addTransactionMutation = useMutation({
     mutationFn: () => addTransaction(formData),

@@ -212,7 +212,9 @@ export default function TransactionForm({
           <Input
             type="number"
             id="total"
-            value={(formData.price * formData.quantity).toFixed(2)}
+            value={(Number(formData.price) * Number(formData.quantity)).toFixed(
+              2,
+            )}
             disabled
           />
         </div>
