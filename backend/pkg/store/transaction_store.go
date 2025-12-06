@@ -71,8 +71,11 @@ func (store *SqliteTransactionStore) AddTransaction(transaction *Transaction) (*
 
 func (store *SqliteTransactionStore) GetAllTransactions() ([]*Transaction, error) {
 	query :=
-		`SELECT id, operation_id, ticker, date, type, quantity, price, currency_id, note
-		FROM "transaction"
+		`SELECT t.id, op.name, t.ticker, t.date, ty.name, t.quantity, t.price, c.code, t.note
+		FROM "transaction" t
+		INNER JOIN currency c ON t.currency_id = c.id
+		INNER JOIN asset_type ty ON t.type = ty.id
+		INNER JOIN operation op ON t.operation_id = op.id
 		`
 
 	rows, err := store.db.Query(query)
