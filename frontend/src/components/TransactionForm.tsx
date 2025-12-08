@@ -212,9 +212,18 @@ export default function TransactionForm({
           <Input
             type="number"
             id="total"
-            value={(Number(formData.price) * Number(formData.quantity)).toFixed(
-              2,
-            )}
+            value={
+              assetTypes?.assetType.find((item) => item.id === formData.type)
+                ?.name === "Option"
+                ? (
+                    Number(formData.price) *
+                    Number(formData.quantity) *
+                    100
+                  ).toFixed(2)
+                : (Number(formData.price) * Number(formData.quantity)).toFixed(
+                    2,
+                  )
+            }
             disabled
           />
         </div>
