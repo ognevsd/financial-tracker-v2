@@ -1,55 +1,109 @@
-import { Card } from "./ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { getAllTransactions } from "../api/transaction";
+import { useMemo, useState } from "react";
+import { Select, SelectOption } from "./ui/select";
+import { Checkbox } from "./ui/checkbox";
+import { Label } from "./ui/label";
 
-export default function TransactionTable({ data, onEdit, onDelete }) {
+interface TransactionTableProps {
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+type OrderOption = "New First" | "Old First";
+
+export default function TransactionTable({
+  onEdit,
+  onDelete,
+}: TransactionTableProps) {
+  const [sortOrder, setSortOrder] = useState<OrderOption>("New First");
+  const { isLoading, data } = useQuery({
+    queryFn: getAllTransactions,
+    queryKey: ["all-transactions"],
+    staleTime: 120_000,
+  });
+
+  const sortedData = useMemo(() => {
+    if (!data?.transaction) return [];
+    return [...data.transaction].sort((a, b) => {
+      if (sortOrder == "New First") {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+  }, [data, sortOrder]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (data?.transaction === null) {
+    return <div>No transactions in DB</div>;
+  }
+
   return (
-    <Card>
+    <>
+      <div className="flex gap-3">
+        <Select
+          value={sortOrder}
+          onChange={(e) =>
+            setSortOrder(
+              e.target.value === "Old First" ? "Old First" : "New First",
+            )
+          }
+        >
+          <SelectOption value="New First">New First</SelectOption>
+          <SelectOption value="Old First">Old First</SelectOption>
+        </Select>
+        <div className="flex gap-3 items-center">
+          <Checkbox id="buy" />
+          <Label htmlFor="buy">Buy</Label>
+        </div>
+      </div>
       <table className="min-w-full overflow-hidden">
         <thead className="bg-gray-200 text-left">
           <tr>
-            <th className="px-4 py-2">Operation</th>
-            <th className="px-4 py-2">Ticker</th>
-            <th className="px-4 py-2">Date</th>
-            <th className="px-4 py-2">Type</th>
-            <th className="px-4 py-2">Quantity</th>
-            <th className="px-4 py-2">Price</th>
-            <th className="px-4 py-2">Total Spent</th>
-            <th className="px-4 py-2">Currency</th>
-            <th className="px-4 py-2">Note</th>
+            <th className="px-2 py-2 text-sm">Operation</th>
+            <th className="px-2 py-2 text-sm">Ticker</th>
+            <th className="px-2 py-2 text-sm">Date</th>
+            <th className="px-2 py-2 text-sm">Type</th>
+            <th className="px-2 py-2 text-sm">Quantity</th>
+            <th className="px-2 py-2 text-sm">Price</th>
+            <th className="px-2 py-2 text-sm">Total Spent</th>
+            <th className="px-2 py-2 text-sm">Currency</th>
+            <th className="px-2 py-2 text-sm">Note</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => (
+          {sortedData.map((row, index) => (
             <tr
               key={index}
               className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
             >
-              <td className="px-4 py-2">{row.operation}</td>
-              <td className="px-4 py-2">{row.ticker}</td>
-              <td className="px-4 py-2">{row.date}</td>
-              <td className="px-4 py-2">{row.type}</td>
-              <td className="px-4 py-2">{row.quantity}</td>
-              <td className="px-4 py-2">{row.price}</td>
-              <td className="px-4 py-2">
-                {(row.quantity * row.price).toFixed(2)}
+              <td className="px-2 py-2">{row.operation}</td>
+              <td className="px-2 py-2">{row.ticker}</td>
+              <td className="px-2 py-2 min-w-28">{row.date}</td>
+              <td className="px-2 py-2">{row.type}</td>
+              <td className="px-2 py-2">{row.quantity}</td>
+              <td className="px-2 py-2">{row.price}</td>
+              <td className="px-2 py-2">
+                {row.type === "Option"
+                  ? (Number(row.quantity) * Number(row.price) * 100).toFixed(2)
+                  : (Number(row.quantity) * Number(row.price)).toFixed(2)}
               </td>
-              <td className="px-4 py-2">{row.currency}</td>
-              <td className="px-4 py-2">{row.note}</td>
-              <td className="px-4 py-2">
-                <button onClick={() => onEdit(index)}>Edit</button>
-                <button onClick={() => onDelete(index)}>Delete</button>
+              <td className="px-2 py-2">{row.currency}</td>
+              <td className="px-2 py-2">{row.note}</td>
+              <td className="px-2 py-2">
+                <div className="flex flex-col items-start">
+                  <button onClick={() => onEdit(row.id)}>Edit</button>
+                  <button onClick={() => onDelete(row.id)}>Delete</button>
+                </div>
               </td>
             </tr>
           ))}
-          {data.length === 0 && (
-            <tr>
-              <td colSpan={9} className="text-center py-4 text-gray-500">
-                No transactions available
-              </td>
-            </tr>
-          )}
         </tbody>
       </table>
-    </Card>
+    </>
   );
 }

@@ -19,6 +19,7 @@ type Application struct {
 	TransactionHandler *api.TransactionHandler
 	CurrencyHandler    *api.CurrencyHandler
 	OperationHandler   *api.OperationHandler
+	AssetTypeHandler   *api.AssetTypeHandler
 	DB                 *sql.DB
 }
 
@@ -35,17 +36,21 @@ func New() (*Application, error) {
 	// stores will go here
 	currencyStore := store.NewSqliteCurrencyStore(sqliteDB)
 	operationStore := store.NewOperationStore(sqliteDB)
+	assetTypeStore := store.NewAssetTypeStore(sqliteDB)
+	transactionStore := store.NewSqliteTransactionStore(sqliteDB)
 
 	// handlers will go here
-	transactionHandler := api.NewTransactionHandler()
 	currencyHandler := api.NewCurrencyHandler(currencyStore, logger)
 	operationHandler := api.NewOperationHandler(operationStore, logger)
+	assetTypeHandler := api.NewAssetTypeHandler(assetTypeStore, logger)
+	transactionHandler := api.NewTransactionHandler(transactionStore, logger)
 
 	app := &Application{
 		Logger:             logger,
 		TransactionHandler: transactionHandler,
 		CurrencyHandler:    currencyHandler,
 		OperationHandler:   operationHandler,
+		AssetTypeHandler:   assetTypeHandler,
 		DB:                 sqliteDB,
 	}
 

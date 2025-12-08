@@ -1,29 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllOperations } from "../api/operations";
+import { getAllAssetTypes } from "../api/assetType";
 
 interface OperationTableProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export default function OperationsTable({
+export default function AssetTypeTable({
   onEdit,
   onDelete,
 }: OperationTableProps) {
   const { isLoading, data } = useQuery({
-    queryFn: getAllOperations,
-    queryKey: ["all-operations"],
+    queryFn: getAllAssetTypes,
+    queryKey: ["all-asset-types"],
     staleTime: 90000,
   });
-
-  // console.log(data)
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (data?.operation === null) {
-    return <div>No operations in DB</div>;
+  if (data?.assetType === null) {
+    return <div>No asset types in DB</div>;
   }
 
   return (
@@ -35,7 +33,7 @@ export default function OperationsTable({
         </tr>
       </thead>
       <tbody>
-        {data?.operation.map((row, index) => (
+        {data?.assetType.map((row, index) => (
           <tr
             key={row.id}
             className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}

@@ -10,8 +10,11 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 
 	r.Get("/health", app.HealthCheck)
 
-	r.Get("/api/transaction/{id}", app.TransactionHandler.HandleGetTransactionById)
-	r.Post("/api/transaction", app.TransactionHandler.HandleAddTransaction)
+	r.Get("/api/transaction", app.TransactionHandler.GetAllTransactions)
+	r.Get("/api/transaction/{id}", app.TransactionHandler.GetTransactionById)
+	r.Put("/api/transaction/{id}", app.TransactionHandler.UpdateTransaction)
+	r.Post("/api/transaction", app.TransactionHandler.AddTransaction)
+	r.Delete("/api/transaction/{id}", app.TransactionHandler.DeleteTransactionById)
 
 	r.Get("/api/currency", app.CurrencyHandler.GetAllCurrencies)
 	r.Get("/api/currency/{id}", app.CurrencyHandler.GetCurrencyById)
@@ -24,6 +27,12 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Put("/api/operation/{id}", app.OperationHandler.UpdateOperation)
 	r.Post("/api/operation", app.OperationHandler.AddOperation)
 	r.Delete("/api/operation/{id}", app.OperationHandler.DeleteOperation)
+
+	r.Get("/api/assettype", app.AssetTypeHandler.GetAllAssetTypes)
+	r.Get("/api/assettype/{id}", app.AssetTypeHandler.GetAssetTypeById)
+	r.Put("/api/assettype/{id}", app.AssetTypeHandler.UpdateAssetType)
+	r.Post("/api/assettype", app.AssetTypeHandler.AddAssetType)
+	r.Delete("/api/assettype/{id}", app.AssetTypeHandler.DeleteAssetType)
 
 	r.NotFound(app.ServeStaticFiles)
 

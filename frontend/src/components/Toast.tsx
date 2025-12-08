@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-
-export type ToastType = "standard" | "error" | "success";
+import type { ToastType } from "../types/toast";
 
 interface ToastProps {
   message: string;
@@ -34,7 +33,7 @@ export default function Toast({
 
   return (
     <div
-      className={`fixed bottom-5 right-5 px-6 py-3 rounded-md shadow-md z-50 max-w-sm ${typeStyles[type]}`}
+      className={`fixed bottom-5 right-5 px-6 py-3 rounded-md shadow-md z-100 max-w-sm ${typeStyles[type]}`}
     >
       {message}
     </div>

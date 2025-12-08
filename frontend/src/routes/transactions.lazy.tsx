@@ -1,137 +1,178 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import TransactionForm from "../components/TransactionForm";
 import TransactionTable from "../components/TransactionTable";
-import { useEffect, useMemo, useState, type Key } from "react";
+import { useState } from "react";
 import Modal from "../components/Modal";
 
-import Papa, { ParseResult } from "papaparse";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
+import type { TransactionFormData } from "../types/transaction";
+import { type ToastData } from "../types/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Toast from "../components/Toast";
+import {
+  addTransaction,
+  deleteTransaction,
+  getTransactionById,
+  updateTransaction,
+} from "../api/transaction";
+import { Card } from "../components/ui/card";
 
 export const Route = createLazyFileRoute("/transactions")({
   component: RouteComponent,
 });
 
-const OperationEnum = {
-  Buy: "Buy",
-  Sell: "Sell",
-  Dividend: "Dividend",
-} as const;
-
-type OperationEnum = (typeof OperationEnum)[keyof typeof OperationEnum];
-
-const CurrencyEnum = {
-  USD: "USD",
-  EUR: "EUR",
-  GBP: "GBP",
-} as const;
-type CurrencyEnum = (typeof CurrencyEnum)[keyof typeof CurrencyEnum];
-
-interface DataRow {
-  operation: OperationEnum;
-  ticker: string;
-  date: string;
-  type: string;
-  quantity: number;
-  price: number;
-  currency: CurrencyEnum;
-  note: string;
-}
-
-const defaultForm = {
-  operation: "buy",
+const defaultForm: TransactionFormData = {
+  operation: "",
+  date: new Date().toISOString().split("T")[0],
   ticker: "",
-  date: "",
-  type: "share",
+  type: "",
   quantity: "",
   price: "",
-  currency: "eur",
+  currency: "",
   note: "",
 };
 
+const defaultToastData: ToastData = {
+  show: false,
+  type: "standard",
+  message: "",
+};
+
 function RouteComponent() {
+  const [formData, setFormData] = useState<TransactionFormData>(defaultForm);
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
-  const [formData, setFormData] = useState(defaultForm);
-  const [data, setData] = useState<DataRow[]>([]);
-  const [editingIndex, setEditingIndex] = useState(null);
+  const [editTransactionId, setEditTransactionId] = useState<string | null>(
+    null,
+  );
+  const [toastInfo, setToastInfo] = useState<ToastData>(defaultToastData);
 
-  function clearForm() {
-    setFormData(defaultForm);
-  }
+  const queryClient = useQueryClient();
+  const onToastClose = () => setToastInfo(defaultToastData);
+  const clearForm = () => setFormData(defaultForm);
+  const onModalClose = () => {
+    setModalOpen(false);
+    setEditTransactionId(null);
+    clearForm();
+  };
 
-  function addTransaction() {
-    setData((prevState) => [...prevState, formData]);
-  }
-  function updateTransaction() {
-    const updated = [...sortedData];
-    updated[editingIndex] = formData;
-    setData(updated);
-    setEditingIndex(null);
+  const addTransactionMutation = useMutation({
+    mutationFn: () => addTransaction(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      setToastInfo({
+        show: true,
+        message: "Transaction added successfully",
+        type: "success",
+      });
+      setEditTransactionId(null);
+      setFormData(defaultForm);
+    },
+    onError: (error) => {
+      setToastInfo({
+        show: true,
+        message: error.message,
+        type: "error",
+      });
+    },
+  });
+
+  const getTransactionByIdMutation = useMutation({
+    mutationFn: (id: string) => getTransactionById(id),
+    onSuccess: (data) => {
+      setFormData(data.transaction);
+    },
+    onError: (error) => {
+      setToastInfo({
+        show: true,
+        message: error.message,
+        type: "error",
+      });
+    },
+  });
+
+  const updateTransactionMutation = useMutation({
+    mutationFn: (id: string) => updateTransaction(id, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      setToastInfo({
+        show: true,
+        message: "Transaction updated successfully",
+        type: "success",
+      });
+      setEditTransactionId(null);
+      setFormData(defaultForm);
+    },
+    onError: (error) => {
+      setToastInfo({
+        show: true,
+        message: error.message,
+        type: "error",
+      });
+    },
+  });
+
+  const deleteTransactionMutation = useMutation({
+    mutationFn: (id: string) => deleteTransaction(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      setToastInfo({
+        show: true,
+        message: "Transaction deleted successfully",
+        type: "success",
+      });
+      setEditTransactionId(null);
+      setFormData(defaultForm);
+    },
+    onError: (error) => {
+      setToastInfo({
+        show: true,
+        message: error.message,
+        type: "error",
+      });
+    },
+  });
+
+  const onTransactionEdit = (id: string) => {
+    setEditTransactionId(id);
+    getTransactionByIdMutation.mutate(id);
+    setModalOpen(true);
+  };
+
+  function submitForm() {
+    if (editTransactionId !== null) {
+      updateTransactionMutation.mutate(editTransactionId);
+    } else {
+      addTransactionMutation.mutate();
+    }
     setModalOpen(false);
   }
 
-  function submitForm() {
-    if (editingIndex !== null) {
-      updateTransaction();
-    } else {
-      addTransaction();
-    }
-    clearForm();
-  }
-
-  function editTransaction(index: number) {
-    setFormData(sortedData[index]);
-    setEditingIndex(index);
-    setModalOpen(true);
-  }
-
-  // Sorting data by time
-  const sortedData = useMemo(() => {
-    return [...data].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
-  }, [data]);
-
-  useEffect(() => {
-    fetch("/trade_journal.csv")
-      .then((response) => response.text())
-      .then((csvText) => {
-        Papa.parse<DataRow>(csvText, {
-          header: true,
-          skipEmptyLines: true,
-          complete: (results: ParseResult<DataRow>) => {
-            setData(results.data);
-          },
-          error: (error) => {
-            console.error("Error parsing csv:", error);
-          },
-        });
-      })
-      .catch((error) => {
-        console.error("Error fetching csv:", error);
-      });
-  }, []);
-
   useLockBodyScroll(isModalOpen);
-  useEscModalClose(isModalOpen, () => setModalOpen(false));
+  useEscModalClose(isModalOpen, onModalClose);
 
   return (
     <div className="space-y-4">
-      <TransactionForm
-        formData={formData}
-        setFormData={setFormData}
-        onSubmit={submitForm}
-        onClear={clearForm}
-        isEdit={false}
+      <Card>
+        <TransactionForm
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={submitForm}
+          onClear={clearForm}
+          isEdit={false}
+        />
+      </Card>
+      <TransactionTable
+        onEdit={onTransactionEdit}
+        onDelete={deleteTransactionMutation.mutate}
       />
-      <TransactionTable data={sortedData} onEdit={editTransaction} />
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          clearForm();
-        }}
-      >
+      <Toast
+        show={toastInfo.show}
+        type={toastInfo.type}
+        message={toastInfo.message}
+        onClose={onToastClose}
+      />
+      <Modal isOpen={isModalOpen} onClose={onModalClose}>
         <h2>Edit Transaction</h2>
         <TransactionForm
           formData={formData}
