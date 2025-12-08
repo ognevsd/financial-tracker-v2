@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getAllTransactions } from "../api/transaction";
 import { useMemo, useState } from "react";
 import { Select, SelectOption } from "./ui/select";
+import { Checkbox } from "./ui/checkbox";
+import { Label } from "./ui/label";
 
 interface TransactionTableProps {
   onEdit: (id: string) => void;
@@ -41,7 +43,7 @@ export default function TransactionTable({
 
   return (
     <>
-      <div>
+      <div className="flex gap-3">
         <Select
           value={sortOrder}
           onChange={(e) =>
@@ -53,6 +55,10 @@ export default function TransactionTable({
           <SelectOption value="New First">New First</SelectOption>
           <SelectOption value="Old First">Old First</SelectOption>
         </Select>
+        <div className="flex gap-3 items-center">
+          <Checkbox id="buy" />
+          <Label htmlFor="buy">Buy</Label>
+        </div>
       </div>
       <table className="min-w-full overflow-hidden">
         <thead className="bg-gray-200 text-left">
@@ -82,7 +88,9 @@ export default function TransactionTable({
               <td className="px-2 py-2">{row.quantity}</td>
               <td className="px-2 py-2">{row.price}</td>
               <td className="px-2 py-2">
-                {(Number(row.quantity) * Number(row.price)).toFixed(2)}
+                {row.type === "Option"
+                  ? (Number(row.quantity) * Number(row.price) * 100).toFixed(2)
+                  : (Number(row.quantity) * Number(row.price)).toFixed(2)}
               </td>
               <td className="px-2 py-2">{row.currency}</td>
               <td className="px-2 py-2">{row.note}</td>

@@ -16,6 +16,7 @@ import {
   getTransactionById,
   updateTransaction,
 } from "../api/transaction";
+import { Card } from "../components/ui/card";
 
 export const Route = createLazyFileRoute("/transactions")({
   component: RouteComponent,
@@ -148,17 +149,19 @@ function RouteComponent() {
   }
 
   useLockBodyScroll(isModalOpen);
-  useEscModalClose(isModalOpen, () => setModalOpen(false));
+  useEscModalClose(isModalOpen, onModalClose);
 
   return (
     <div className="space-y-4">
-      <TransactionForm
-        formData={formData}
-        setFormData={setFormData}
-        onSubmit={submitForm}
-        onClear={clearForm}
-        isEdit={false}
-      />
+      <Card>
+        <TransactionForm
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={submitForm}
+          onClear={clearForm}
+          isEdit={false}
+        />
+      </Card>
       <TransactionTable
         onEdit={onTransactionEdit}
         onDelete={deleteTransactionMutation.mutate}

@@ -4,7 +4,7 @@ import { cn } from "../../lib/utils";
 const Card = ({ className, ref, ...props }: ComponentProps<"div">) => (
   <div
     ref={ref}
-    className={cn("rounded-md shadow-md bg-stone-50 px-4 py-2", className)}
+    className={cn("rounded-md shadow-md bg-white px-4 py-4", className)}
     {...props}
   />
 );

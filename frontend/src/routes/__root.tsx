@@ -7,21 +7,19 @@ export const Route = createRootRoute({
   component: () => {
     return (
       <>
-        <div className="">
-          <Navigation />
-          <div
-            className="
-            mt-16
+        <Navigation />
+        <div
+          className="
+            mt-18
             overflow-y-auto
             min-w-screen
             px-4
-            min-h-[calc(100vh-4rem)]
+            min-h-[calc(100vh-4.5rem)]
           "
-          >
-            <Outlet />
-            <ReactQueryDevtools />
-            <TanStackRouterDevtools />
-          </div>
+        >
+          <Outlet />
+          <ReactQueryDevtools />
+          <TanStackRouterDevtools />
         </div>
       </>
     );
