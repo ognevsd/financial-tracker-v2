@@ -9,6 +9,7 @@ interface NavItems {
 export default function Navigation() {
   const navItems: NavItems[] = [
     { to: "/transactions", label: "Transactions" },
+    { to: "/companies", label: "Companies" },
     { to: "/dividend-yield", label: "Dividend Yield" },
     { to: "/settings", label: "Settings" },
   ];

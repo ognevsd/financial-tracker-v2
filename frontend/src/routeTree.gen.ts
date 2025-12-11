@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 const TransactionsLazyRouteImport = createFileRoute('/transactions')()
 const SettingsLazyRouteImport = createFileRoute('/settings')()
 const DividendYieldLazyRouteImport = createFileRoute('/dividend-yield')()
+const CompaniesLazyRouteImport = createFileRoute('/companies')()
 
 const TransactionsLazyRoute = TransactionsLazyRouteImport.update({
   id: '/transactions',
@@ -34,6 +35,11 @@ const DividendYieldLazyRoute = DividendYieldLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/dividend-yield.lazy').then((d) => d.Route),
 )
+const CompaniesLazyRoute = CompaniesLazyRouteImport.update({
+  id: '/companies',
+  path: '/companies',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/companies.lazy').then((d) => d.Route))
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -42,12 +48,14 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/companies': typeof CompaniesLazyRoute
   '/dividend-yield': typeof DividendYieldLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/transactions': typeof TransactionsLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/companies': typeof CompaniesLazyRoute
   '/dividend-yield': typeof DividendYieldLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/transactions': typeof TransactionsLazyRoute
@@ -55,20 +63,33 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/companies': typeof CompaniesLazyRoute
   '/dividend-yield': typeof DividendYieldLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/transactions': typeof TransactionsLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dividend-yield' | '/settings' | '/transactions'
+  fullPaths:
+    | '/'
+    | '/companies'
+    | '/dividend-yield'
+    | '/settings'
+    | '/transactions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dividend-yield' | '/settings' | '/transactions'
-  id: '__root__' | '/' | '/dividend-yield' | '/settings' | '/transactions'
+  to: '/' | '/companies' | '/dividend-yield' | '/settings' | '/transactions'
+  id:
+    | '__root__'
+    | '/'
+    | '/companies'
+    | '/dividend-yield'
+    | '/settings'
+    | '/transactions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompaniesLazyRoute: typeof CompaniesLazyRoute
   DividendYieldLazyRoute: typeof DividendYieldLazyRoute
   SettingsLazyRoute: typeof SettingsLazyRoute
   TransactionsLazyRoute: typeof TransactionsLazyRoute
@@ -97,6 +118,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DividendYieldLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/companies': {
+      id: '/companies'
+      path: '/companies'
+      fullPath: '/companies'
+      preLoaderRoute: typeof CompaniesLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -109,6 +137,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompaniesLazyRoute: CompaniesLazyRoute,
   DividendYieldLazyRoute: DividendYieldLazyRoute,
   SettingsLazyRoute: SettingsLazyRoute,
   TransactionsLazyRoute: TransactionsLazyRoute,

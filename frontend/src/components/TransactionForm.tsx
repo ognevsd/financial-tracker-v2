@@ -121,8 +121,9 @@ export default function TransactionForm({
         <div>
           <Label htmlFor="date">Date</Label>
           <Input
-            type="date"
+            type="text"
             id="date"
+            pattern="\d{4}-\d{2}-\d{2}"
             value={formData.date}
             required
             onChange={(e) => {
