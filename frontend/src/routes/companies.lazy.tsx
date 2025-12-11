@@ -3,6 +3,7 @@ import { useState } from "react";
 import { MoveDown, MoveUp, Trash2 } from "lucide-react";
 import Button from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { Select, SelectOption } from "../components/ui/select";
 
 export const Route = createLazyFileRoute("/companies")({
   component: RouteComponent,
@@ -126,6 +127,14 @@ function RouteComponent() {
     );
   };
 
+  const updateTaxonomy = (value: string, item_id: string) => {
+    setBsFields((prevState) =>
+      prevState.map((item) =>
+        item.id === item_id ? { ...item, taxonomy_id: value } : item,
+      ),
+    );
+  };
+
   const onSaveButton = () => {
     console.log(bsFields);
   };
@@ -199,12 +208,19 @@ function RouteComponent() {
                   <tr key={item.id}>
                     <td className="px-2 py-2">{item.order_index}</td>
                     <td className="px-2 py-2">
-                      <Input
-                        value={item.taxonomy_name}
+                      <Select
+                        value={item.taxonomy_id}
                         onChange={(e) =>
-                          updateField(e.target.value, "taxonomy_name", item.id)
+                          updateTaxonomy(e.target.value, item.id)
                         }
-                      />
+                      >
+                        <SelectOption value=""></SelectOption>
+                        {taxonomy.map((taxonomy) => (
+                          <SelectOption key={taxonomy.id} value={taxonomy.id}>
+                            {taxonomy.name}
+                          </SelectOption>
+                        ))}
+                      </Select>
                     </td>
                     <td className="px-2 py-2">
                       <Input
@@ -242,6 +258,7 @@ function RouteComponent() {
                 ))}
             </tbody>
           </table>
+          <Button variant="secondary">Add Item</Button>
         </div>
       ))}
 
