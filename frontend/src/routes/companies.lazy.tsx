@@ -29,6 +29,7 @@ const incomeStatement = {
     expenses: [
       {
         taxonomy: "",
+        order: 3,
         label: "Cost of goods sold",
         data: [151057, 134228, 126440],
       },
@@ -132,16 +133,35 @@ function RouteComponent() {
     console.log("Cancel not working");
   };
   const moveRow = (index: number, direction: number, section_id: string) => {
-    console.log("moveRow");
+    const sectionItems = bsFields
+      .filter((item) => item.section_id === section_id)
+      .sort((a, b) => a.order_index - b.order_index);
+
+    if (index + direction < 0 || index + direction >= sectionItems.length) {
+      return;
+    }
+
+    const itemToMove = sectionItems[index];
+    const itemToSwap = sectionItems[index + direction];
+
+    setBsFields((prevState) =>
+      prevState.map((item) => {
+        if (item.id === itemToMove.id) {
+          return { ...item, order_index: itemToSwap.order_index };
+        }
+        if (item.id === itemToSwap.id) {
+          return { ...item, order_index: itemToMove.order_index };
+        }
+        return item;
+      }),
+    );
   };
 
   const onUpButton = (index: number, section_id: string) => {
-    console.log("Up");
     moveRow(index, -1, section_id);
   };
   const onDownButton = (index: number, section_id: string) => {
-    console.log("Down");
-    moveRow(index, -1, section_id);
+    moveRow(index, 1, section_id);
   };
   const onDeleteButton = () => {
     console.log("Delete");
@@ -200,7 +220,7 @@ function RouteComponent() {
                         disabled={index === 0 ? true : false}
                         variant="secondary"
                         onClick={() => {
-                          onUpButton(index, section.id, item.id);
+                          onUpButton(index, section.id);
                         }}
                       >
                         <MoveUp size={16} />
@@ -209,7 +229,7 @@ function RouteComponent() {
                         disabled={
                           index === sectionItems.length - 1 ? true : false
                         }
-                        onClick={onDownButton}
+                        onClick={() => onDownButton(index, section.id)}
                         variant="secondary"
                       >
                         <MoveDown size={16} />
