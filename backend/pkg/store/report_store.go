@@ -72,7 +72,7 @@ func (store *SqliteReportStore) GetAllReports() ([]*Report, error) {
 func (store *SqliteReportStore) GetReportById(id string) (*Report, error) {
 	query := `SELECT id, name FROM report WHERE id = $1`
 
-	var report *Report
+	report := &Report{}
 
 	err := store.db.QueryRow(query, id).Scan(
 		&report.ID,
