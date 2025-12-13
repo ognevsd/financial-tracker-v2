@@ -1,4 +1,5 @@
 import type { CurrencyFormData, CurrencyTableData } from "../types/currency";
+import type { errorResponse } from "../types/error";
 
 interface CurrencyResponse {
   currency: CurrencyFormData;
@@ -22,7 +23,7 @@ export async function addCurrency(
   });
 
   if (!resp.ok) {
-    const errorData = await resp.json().catch(() => ({}));
+    const errorData: errorResponse = await resp.json().catch(() => ({}));
     throw new Error(errorData.error || `API error: ${resp.status}`);
   }
 
