@@ -3,6 +3,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-destructive: var(--destructive);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -25,6 +26,7 @@
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  --destructive: oklch(0.63 0.21 27.325);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --primary: oklch(0.205 0 0);
@@ -32,15 +34,6 @@
   --secondary: oklch(0.93 0 0);
   --secondary-foreground: oklch(0.205 0 0);
 }
-
-/* a { */
-/*   font-weight: 500; */
-/*   color: #646cff; */
-/*   text-decoration: inherit; */
-/* } */
-/* a:hover { */
-/*   color: #535bf2; */
-/* } */
 
 h1 {
   font-size: 3.2em;
@@ -50,13 +43,3 @@ h1 {
 button {
   cursor: pointer;
 }
-
-/* @media (prefers-color-scheme: light) { */
-/*   :root { */
-/*     color: #213547; */
-/*     background-color: #ffffff; */
-/*   } */
-/*   a:hover { */
-/*     color: #747bff; */
-/*   } */
-/* } */
