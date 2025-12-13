@@ -12,7 +12,7 @@ export default function ReportTable({ onEdit, onDelete }: OperationTableProps) {
   const { isLoading, data } = useQuery({
     queryFn: getAllReports,
     queryKey: ["all-reports"],
-    staleTime: 90000,
+    staleTime: 120000,
   });
 
   if (isLoading) {

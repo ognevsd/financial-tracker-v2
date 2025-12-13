@@ -36,6 +36,7 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 
 	r.Get("/api/report", app.ReportHandler.GetAllReports)
 	r.Get("/api/report/{id}", app.ReportHandler.GetReportById)
+	r.Put("/api/report/{id}", app.ReportHandler.UpdateReport)
 	r.Post("/api/report", app.ReportHandler.AddReprot)
 
 	r.NotFound(app.ServeStaticFiles)

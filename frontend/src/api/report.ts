@@ -1,3 +1,4 @@
+import type { errorResponse } from "../types/error";
 import type { ReportTableData } from "../types/report";
 
 interface ReportResponse {
@@ -17,8 +18,8 @@ export async function getAllReports(): Promise<ReportsResponse> {
   });
 
   if (!resp.ok) {
-    const errData = await resp.json().catch(() => ({}));
-    throw new Error(errData || `API error: ${resp.status}`);
+    const errData: errorResponse = await resp.json().catch(() => ({}));
+    throw new Error(errData.error || `API error: ${resp.status}`);
   }
 
   return resp.json();
@@ -34,8 +35,8 @@ export async function addReport(name: string) {
   });
 
   if (!resp.ok) {
-    const errData = await resp.json().catch(() => ({}));
-    throw new Error(errData || `API error: ${resp.status}`);
+    const errData: errorResponse = await resp.json().catch(() => ({}));
+    throw new Error(errData.error || `API error: ${resp.status}`);
   }
 }
 
@@ -53,4 +54,35 @@ export async function getReportById(id: string): Promise<ReportResponse> {
   }
 
   return resp.json();
+}
+
+export async function updateReport(id: string, name: string) {
+  const resp = await fetch(`/api/report/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name: name }),
+  });
+
+  if (!resp.ok) {
+    const errData: errorResponse = await resp.json().catch(() => ({}));
+    throw new Error(errData.error || `API error: ${resp.status}`);
+  }
+
+  return resp.json();
+}
+
+export async function deleteReportById(id: string) {
+  const resp = await fetch(`/api/report/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!resp.ok) {
+    const errData: errorResponse = await resp.json().catch(() => ({}));
+    throw new Error(errData.error || `API error: ${resp.status}`);
+  }
 }

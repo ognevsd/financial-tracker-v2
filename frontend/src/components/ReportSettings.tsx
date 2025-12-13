@@ -6,16 +6,16 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
 import AssetTypeForm from "./AssetTypeForm";
 import type { AssetTypeFormData } from "../types/assetType";
-import {
-  DeleteAssetTypeById,
-  getAssetTypeById,
-  updateAssetTypeById,
-} from "../api/assetType";
 import { defaultToastData, type ToastData } from "../types/toast";
 import ReportForm from "./ReportForm";
 import ReportTable from "./ReportTable";
 import type { ReportFormData } from "../types/report";
-import { addReport, getReportById } from "../api/report";
+import {
+  addReport,
+  deleteReportById,
+  getReportById,
+  updateReport,
+} from "../api/report";
 
 const defaultFormData: ReportFormData = {
   id: "",
@@ -26,7 +26,7 @@ export default function ReportSettings() {
   const [formData, setFormData] = useState<AssetTypeFormData>(defaultFormData);
   const [toastData, setToastData] = useState<ToastData>(defaultToastData);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [editOperationId, setEditOperationId] = useState<string | null>(null);
+  const [editReportId, setEditReportId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -34,7 +34,7 @@ export default function ReportSettings() {
   const onToastClose = () => setToastData(defaultToastData);
   const onModalClose = () => {
     setShowModal(false);
-    setEditOperationId(null);
+    setEditReportId(null);
     setFormData(defaultFormData);
   };
 
@@ -75,8 +75,8 @@ export default function ReportSettings() {
     },
   });
 
-  const editAssetTypeMutation = useMutation({
-    mutationFn: (id: string) => updateAssetTypeById(id, formData.name),
+  const editReportMutation = useMutation({
+    mutationFn: (id: string) => updateReport(id, formData.name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["all-reports"] });
       setToastData({
@@ -84,7 +84,7 @@ export default function ReportSettings() {
         message: `Asset type ${formData.name} updated`,
         type: "success",
       });
-      setEditOperationId(null);
+      setEditReportId(null);
       setFormData(defaultFormData);
     },
     onError: (e) => {
@@ -96,8 +96,8 @@ export default function ReportSettings() {
     },
   });
 
-  const deleteAssetType = useMutation({
-    mutationFn: (id: string) => DeleteAssetTypeById(id),
+  const deleteReport = useMutation({
+    mutationFn: (id: string) => deleteReportById(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["all-asset-types"] });
       setToastData({
@@ -116,16 +116,16 @@ export default function ReportSettings() {
   });
 
   const onEditOperation = (id: string) => {
-    setEditOperationId(id);
+    setEditReportId(id);
     fetchReportMutation.mutate(id);
     setShowModal(true);
   };
 
   const submitForm = () => {
-    if (editOperationId == null) {
+    if (editReportId == null) {
       addReportMutation.mutate();
     } else {
-      editAssetTypeMutation.mutate(editOperationId);
+      editReportMutation.mutate(editReportId);
     }
     setShowModal(false);
   };
@@ -139,7 +139,7 @@ export default function ReportSettings() {
         onClear={clearForm}
         isEdit={false}
       />
-      <ReportTable onEdit={onEditOperation} onDelete={deleteAssetType.mutate} />
+      <ReportTable onEdit={onEditOperation} onDelete={deleteReport.mutate} />
       <Toast
         show={toastData.show}
         message={toastData.message}
