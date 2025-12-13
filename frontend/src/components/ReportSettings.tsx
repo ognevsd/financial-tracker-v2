@@ -15,7 +15,7 @@ import { defaultToastData, type ToastData } from "../types/toast";
 import ReportForm from "./ReportForm";
 import ReportTable from "./ReportTable";
 import type { ReportFormData } from "../types/report";
-import { addReport } from "../api/report";
+import { addReport, getReportById } from "../api/report";
 
 const defaultFormData: ReportFormData = {
   id: "",
@@ -62,9 +62,9 @@ export default function ReportSettings() {
   });
 
   const fetchReportMutation = useMutation({
-    mutationFn: (id: string) => getAssetTypeById(id),
+    mutationFn: (id: string) => getReportById(id),
     onSuccess: (data) => {
-      setFormData(data.assetType);
+      setFormData(data.report);
     },
     onError: (e) => {
       setToastData({
@@ -78,7 +78,7 @@ export default function ReportSettings() {
   const editAssetTypeMutation = useMutation({
     mutationFn: (id: string) => updateAssetTypeById(id, formData.name),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-asset-types"] });
+      queryClient.invalidateQueries({ queryKey: ["all-reports"] });
       setToastData({
         show: true,
         message: `Asset type ${formData.name} updated`,

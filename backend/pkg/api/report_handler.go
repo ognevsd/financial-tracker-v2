@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -47,5 +48,25 @@ func (handler *ReportHandler) GetAllReports(w http.ResponseWriter, r *http.Reque
 	}
 
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"report": reports})
+}
 
+func (handler *ReportHandler) GetReportById(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.ReadIdParam(r)
+	if err != nil {
+		handler.logger.Printf("ERROR api:GetReportById get id param: %v", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": fmt.Sprintf("Error parsing id from url: %v", err)})
+		return
+	}
+	report, err := handler.store.GetReportById(id)
+	if err == sql.ErrNoRows {
+		utils.WriteJSON(w, http.StatusNotFound, utils.Envelope{"error": fmt.Sprintf("Cannot find report with id: %s", id)})
+		return
+	}
+	if err != nil {
+		handler.logger.Printf("ERROR api:GetReportById get report from db: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Internal error: %v", err)})
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"report": report})
 }

@@ -1,5 +1,9 @@
 import type { ReportTableData } from "../types/report";
 
+interface ReportResponse {
+  report: ReportTableData;
+}
+
 interface ReportsResponse {
   report: ReportTableData[];
 }
@@ -33,4 +37,20 @@ export async function addReport(name: string) {
     const errData = await resp.json().catch(() => ({}));
     throw new Error(errData || `API error: ${resp.status}`);
   }
+}
+
+export async function getReportById(id: string): Promise<ReportResponse> {
+  const resp = await fetch(`/api/report/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!resp.ok) {
+    const errData = await resp.json().catch(() => ({}));
+    throw new Error(errData || `API error: ${resp.status}`);
+  }
+
+  return resp.json();
 }
