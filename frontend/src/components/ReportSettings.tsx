@@ -99,10 +99,10 @@ export default function ReportSettings() {
   const deleteReport = useMutation({
     mutationFn: (id: string) => deleteReportById(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-asset-types"] });
+      queryClient.invalidateQueries({ queryKey: ["all-reports"] });
       setToastData({
         show: true,
-        message: "Asset type deleted successfully",
+        message: "Report deleted successfully",
         type: "success",
       });
     },

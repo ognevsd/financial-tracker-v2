@@ -114,3 +114,24 @@ func (handler *ReportHandler) UpdateReport(w http.ResponseWriter, r *http.Reques
 
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"report": report})
 }
+
+func (handler *ReportHandler) DeleteReport(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.ReadIdParam(r)
+	if err != nil {
+		handler.logger.Printf("ERROR: api:DeleteReport get id from slug: %v", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid report id"})
+		return
+	}
+	err = handler.store.DeleteReportById(id)
+	if err == sql.ErrNoRows {
+		utils.WriteJSON(w, http.StatusNotFound, utils.Envelope{"error": "Report not found"})
+		return
+	}
+	if err != nil {
+		handler.logger.Printf("ERROR: DeleteCurrency: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error deleting asset type: %v", err)})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
