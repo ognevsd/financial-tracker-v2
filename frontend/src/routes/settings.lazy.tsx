@@ -5,6 +5,7 @@ import Button from "../components/ui/button";
 import CurrencySettings from "../components/CurrencySettings";
 import AssetTypeSettings from "../components/AssetTypeSettings";
 import { Card } from "../components/ui/card";
+import ReportSettings from "../components/ReportSettings";
 
 export const Route = createLazyFileRoute("/settings")({
   component: RouteComponent,
@@ -17,6 +18,7 @@ function RouteComponent() {
     { id: "operations", label: "Operations" },
     { id: "currency", label: "Currencies" },
     { id: "assetType", label: "Asset Type" },
+    { id: "report", label: "Report" },
   ];
 
   const renderContent = () => {
@@ -27,6 +29,8 @@ function RouteComponent() {
         return <CurrencySettings />;
       case "assetType":
         return <AssetTypeSettings />;
+      case "report":
+        return <ReportSettings />;
     }
   };
 
@@ -44,7 +48,7 @@ function RouteComponent() {
               <Button
                 key={item.id}
                 variant={activeSection === item.id ? "default" : "secondary"}
-                className="w-full"
+                className="w-full justify-start"
                 onClick={() => setActiveSection(item.id)}
               >
                 {item.label}

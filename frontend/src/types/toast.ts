@@ -5,3 +5,9 @@ export interface ToastData {
   message: string;
   type: ToastType;
 }
+
+export const defaultToastData: ToastData = {
+  show: false,
+  message: "",
+  type: "standard",
+};
