@@ -263,16 +263,12 @@ export default function TransactionForm({
         />
       </div>
       <div className="space-x-2">
-        <Button
-          type="submit"
-          className="border px-4 py-2 rounded hover:bg-gray-200"
-        >
+        <Button type="submit">
           {isEdit ? "Save Changes" : "Add Transaction"}
         </Button>
         <Button
           type="button"
           variant="secondary"
-          className="border px-4 py-2 rounded hover:bg-gray-200"
           onClick={onClear}
         >
           Clear
