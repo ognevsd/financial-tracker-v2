@@ -20,11 +20,14 @@ export default function Navigation() {
           {navItems.map((item) => (
             <li key={item.to}>
               <Link
-                className="py-4 px-2 rounded-md hover:bg-secondary/80"
+                className="py-4 px-2 rounded-md"
                 to={item.to}
                 activeProps={{
                   className:
                     "bg-primary text-primary-foreground hover:bg-primary/90",
+                }}
+                inactiveProps={{
+                  className: "hover:bg-secondary/80",
                 }}
               >
                 {item.label}
