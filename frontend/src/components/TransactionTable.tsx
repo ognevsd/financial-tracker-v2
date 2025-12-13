@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Select, SelectOption } from "./ui/select";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
+import Button from "./ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface TransactionTableProps {
   onEdit: (id: string) => void;
@@ -95,9 +97,10 @@ export default function TransactionTable({
               <td className="px-2 py-2">{row.currency}</td>
               <td className="px-2 py-2">{row.note}</td>
               <td className="px-2 py-2">
-                <div className="flex flex-col items-start">
-                  <button onClick={() => onEdit(row.id)}>Edit</button>
-                  <button onClick={() => onDelete(row.id)}>Delete</button>
+                <div className="flex flex-row space-x-1">
+                  <Button variant="secondary" onClick={() => onEdit(row.id)}>
+                    <Pencil />
+                  </Button>
                 </div>
               </td>
             </tr>
