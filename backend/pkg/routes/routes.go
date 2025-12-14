@@ -40,6 +40,12 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Post("/api/report", app.ReportHandler.AddReprot)
 	r.Delete("/api/report/{id}", app.ReportHandler.DeleteReport)
 
+	r.Get("/api/report-section", app.ReportSectionHandler.GetAllReportSections)
+	r.Get("/api/report-section/{id}", app.ReportSectionHandler.GetReportSectionById)
+	r.Put("/api/report-section/{id}", app.ReportSectionHandler.UpdateReportSection)
+	r.Post("/api/report-section", app.ReportSectionHandler.AddReportSection)
+	r.Delete("/api/report-section/{id}", app.ReportSectionHandler.DeleteReportSection)
+
 	r.NotFound(app.ServeStaticFiles)
 
 	return r

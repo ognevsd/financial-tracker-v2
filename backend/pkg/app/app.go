@@ -15,13 +15,14 @@ import (
 const StaticFiles string = "../frontend/dist"
 
 type Application struct {
-	Logger             *log.Logger
-	TransactionHandler *api.TransactionHandler
-	CurrencyHandler    *api.CurrencyHandler
-	OperationHandler   *api.OperationHandler
-	AssetTypeHandler   *api.AssetTypeHandler
-	ReportHandler      *api.ReportHandler
-	DB                 *sql.DB
+	Logger               *log.Logger
+	TransactionHandler   *api.TransactionHandler
+	CurrencyHandler      *api.CurrencyHandler
+	OperationHandler     *api.OperationHandler
+	AssetTypeHandler     *api.AssetTypeHandler
+	ReportHandler        *api.ReportHandler
+	ReportSectionHandler *api.ReportSectionHandler
+	DB                   *sql.DB
 }
 
 func New() (*Application, error) {
@@ -40,6 +41,7 @@ func New() (*Application, error) {
 	assetTypeStore := store.NewAssetTypeStore(sqliteDB)
 	transactionStore := store.NewSqliteTransactionStore(sqliteDB)
 	reportStore := store.NewSqliteReportStore(sqliteDB)
+	reportSectionStore := store.NewSqliteReportSectionStore(sqliteDB)
 
 	// handlers will go here
 	currencyHandler := api.NewCurrencyHandler(currencyStore, logger)
@@ -47,15 +49,17 @@ func New() (*Application, error) {
 	assetTypeHandler := api.NewAssetTypeHandler(assetTypeStore, logger)
 	transactionHandler := api.NewTransactionHandler(transactionStore, logger)
 	reportHandler := api.NewReportHandler(reportStore, logger)
+	reportSectionHandler := api.NewReportSectionHandler(reportSectionStore, logger)
 
 	app := &Application{
-		Logger:             logger,
-		TransactionHandler: transactionHandler,
-		CurrencyHandler:    currencyHandler,
-		OperationHandler:   operationHandler,
-		AssetTypeHandler:   assetTypeHandler,
-		ReportHandler:      reportHandler,
-		DB:                 sqliteDB,
+		Logger:               logger,
+		TransactionHandler:   transactionHandler,
+		CurrencyHandler:      currencyHandler,
+		OperationHandler:     operationHandler,
+		AssetTypeHandler:     assetTypeHandler,
+		ReportHandler:        reportHandler,
+		ReportSectionHandler: reportSectionHandler,
+		DB:                   sqliteDB,
 	}
 
 	return app, nil

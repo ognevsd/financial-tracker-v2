@@ -4,26 +4,34 @@ import Toast from "../components/Toast";
 import Modal from "../components/Modal";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
-import AssetTypeForm from "./AssetTypeForm";
 import type { AssetTypeFormData } from "../types/assetType";
 import { defaultToastData, type ToastData } from "../types/toast";
-import ReportForm from "./ReportForm";
-import ReportTable from "./ReportTable";
-import type { ReportFormData } from "../types/report";
 import {
   addReport,
   deleteReportById,
   getReportById,
   updateReport,
 } from "../api/report";
+import ReportSectionTable from "./ReportSectionTable";
+import ReportSectionForm from "./ReportSectionForm";
+import type { ReportSectionFormData } from "../types/reportSection";
+import {
+  addReportSection,
+  deleteReportSectionById,
+  getReportSectionById,
+  updateReportSection,
+} from "../api/reportSection";
 
-const defaultFormData: ReportFormData = {
+const defaultFormData: ReportSectionFormData = {
   id: "",
   name: "",
+  reportId: "",
+  orderIndex: "",
 };
 
-export default function ReportSettings() {
-  const [formData, setFormData] = useState<AssetTypeFormData>(defaultFormData);
+export default function ReportSectionSettings() {
+  const [formData, setFormData] =
+    useState<ReportSectionFormData>(defaultFormData);
   const [toastData, setToastData] = useState<ToastData>(defaultToastData);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [editReportId, setEditReportId] = useState<string | null>(null);
@@ -41,13 +49,13 @@ export default function ReportSettings() {
   useLockBodyScroll(showModal);
   useEscModalClose(showModal, onModalClose);
 
-  const addReportMutation = useMutation({
-    mutationFn: () => addReport(formData.name),
+  const addReportSectionMutation = useMutation({
+    mutationFn: () => addReportSection(formData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["all-report-sections"] });
       setToastData({
         show: true,
-        message: `Report ${formData.name} added successfully`,
+        message: `Report section ${formData.name} added successfully`,
         type: "success",
       });
       setFormData(defaultFormData);
@@ -61,10 +69,10 @@ export default function ReportSettings() {
     },
   });
 
-  const fetchReportMutation = useMutation({
-    mutationFn: (id: string) => getReportById(id),
+  const getReportSectionByIdMutation = useMutation({
+    mutationFn: (id: string) => getReportSectionById(id),
     onSuccess: (data) => {
-      setFormData(data.report);
+      setFormData(data.reportSection);
     },
     onError: (e) => {
       setToastData({
@@ -75,13 +83,13 @@ export default function ReportSettings() {
     },
   });
 
-  const editReportMutation = useMutation({
-    mutationFn: (id: string) => updateReport(id, formData.name),
+  const editReportSectionMutation = useMutation({
+    mutationFn: (id: string) => updateReportSection(id, formData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["all-report-sections"] });
       setToastData({
         show: true,
-        message: `Asset type ${formData.name} updated`,
+        message: `Report section ${formData.name} updated`,
         type: "success",
       });
       setEditReportId(null);
@@ -96,13 +104,13 @@ export default function ReportSettings() {
     },
   });
 
-  const deleteReport = useMutation({
-    mutationFn: (id: string) => deleteReportById(id),
+  const deleteReportSectionMutation = useMutation({
+    mutationFn: (id: string) => deleteReportSectionById(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["all-report-sections"] });
       setToastData({
         show: true,
-        message: "Report deleted successfully",
+        message: "Report section deleted successfully",
         type: "success",
       });
     },
@@ -117,29 +125,32 @@ export default function ReportSettings() {
 
   const onEditOperation = (id: string) => {
     setEditReportId(id);
-    fetchReportMutation.mutate(id);
+    getReportSectionByIdMutation.mutate(id);
     setShowModal(true);
   };
 
   const submitForm = () => {
     if (editReportId == null) {
-      addReportMutation.mutate();
+      addReportSectionMutation.mutate();
     } else {
-      editReportMutation.mutate(editReportId);
+      editReportSectionMutation.mutate(editReportId);
     }
     setShowModal(false);
   };
 
   return (
     <div className="space-y-2">
-      <ReportForm
+      <ReportSectionForm
         formData={formData}
         setFormData={setFormData}
         onSubmit={submitForm}
         onClear={clearForm}
         isEdit={false}
       />
-      <ReportTable onEdit={onEditOperation} onDelete={deleteReport.mutate} />
+      <ReportSectionTable
+        onEdit={onEditOperation}
+        onDelete={deleteReportSectionMutation.mutate}
+      />
       <Toast
         show={toastData.show}
         message={toastData.message}
@@ -147,7 +158,7 @@ export default function ReportSettings() {
         onClose={onToastClose}
       />
       <Modal isOpen={showModal} onClose={onModalClose}>
-        <ReportForm
+        <ReportSectionForm
           formData={formData}
           setFormData={setFormData}
           onSubmit={submitForm}
