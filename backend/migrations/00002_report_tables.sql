@@ -11,9 +11,10 @@ CREATE TABLE IF NOT EXISTS report_section (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL UNIQUE,
     report_id TEXT REFERENCES report(id),
-    order_index INTEGER UNIQUE NOT NULL CHECK(order_index >= 0),
+    order_index INTEGER NOT NULL CHECK(order_index >= 0),
     created_at TEXT NOT NULL DEFAULT current_timestamp,
-    updated_at TEXT NOT NULL DEFAULT current_timestamp
+    updated_at TEXT NOT NULL DEFAULT current_timestamp,
+    UNIQUE(report_id, order_index)
 );
 
 CREATE TABLE IF NOT EXISTS taxonomy (
@@ -26,12 +27,13 @@ CREATE TABLE IF NOT EXISTS taxonomy (
 CREATE TABLE IF NOT EXISTS report_field (
     id TEXT PRIMARY KEY NOT NULL,
     original_name TEXT NOT NULL,
-    order_index INTEGER UNIQUE NOT NULL CHECK(order_index >= 0),
+    order_index INTEGER NOT NULL CHECK(order_index >= 0),
     report_id TEXT NOT NULL REFERENCES report(id),
     section_id TEXT NOT NULL REFERENCES report_section(id),
     taxonomy_id TEXT REFERENCES taxonomy(id),
     created_at TEXT NOT NULL DEFAULT current_timestamp,
-    updated_at TEXT NOT NULL DEFAULT current_timestamp
+    updated_at TEXT NOT NULL DEFAULT current_timestamp,
+    UNIQUE(section_id, order_index)
 );
 
 CREATE TABLE IF NOT EXISTS field_value (
