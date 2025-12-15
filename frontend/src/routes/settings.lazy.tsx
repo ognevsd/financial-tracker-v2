@@ -39,14 +39,14 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex overflow-hidden">
+    <div className="flex h-[calc(100vh-5rem)]">
       <Card
         className="
-        min-h-[calc(100vh-5rem)]
+        h-full
         mb-2
         "
       >
-        <aside className="w-48 md:w-64 shrink-0 overflow-y-auto">
+        <aside className="w-48 md:w-64 shrink-0 h-full overflow-y-auto">
           <nav className="space-y-2">
             {settingsItems.map((item) => (
               <Button
@@ -61,8 +61,8 @@ function RouteComponent() {
           </nav>
         </aside>
       </Card>
-      <div className="flex-1 overflow-hiddenoperations">
-        <div className="h-full overflow-y-auto px-4">{renderContent()}</div>
+      <div className="flex-1 h-full overflow-y-auto">
+        <div className="h-full px-4">{renderContent()}</div>
       </div>
     </div>
   );
