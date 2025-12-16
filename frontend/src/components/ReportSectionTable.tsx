@@ -30,7 +30,7 @@ export default function ReportSectionTable({
   }
 
   if (reports?.report === null) {
-    return <div>No reports or report sections in DB</div>;
+    return <div>No reports in DB</div>;
   }
 
   return (

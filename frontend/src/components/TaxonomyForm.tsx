@@ -2,26 +2,26 @@ import { useEffect, type Dispatch, type SetStateAction } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import Button from "./ui/button";
+import type { TaxonomyFormData } from "../types/taxonomy";
 import { getAllReports } from "../api/report";
-import type { ReportSectionFormData } from "../types/reportSection";
 import { useQuery } from "@tanstack/react-query";
 import { Select, SelectOption } from "./ui/select";
 
-interface ReportSectionFormProps {
-  formData: ReportSectionFormData;
-  setFormData: Dispatch<SetStateAction<ReportSectionFormData>>;
+interface TaxonomyFormProps {
+  formData: TaxonomyFormData;
+  setFormData: Dispatch<SetStateAction<TaxonomyFormData>>;
   onSubmit: () => void;
   onClear: () => void;
   isEdit: boolean;
 }
 
-export default function ReportSectionForm({
+export default function TaxonomyForm({
   formData,
   setFormData,
   onSubmit,
   onClear,
   isEdit,
-}: ReportSectionFormProps) {
+}: TaxonomyFormProps) {
   const { isLoading: isReportsLoading, data: reports } = useQuery({
     queryFn: getAllReports,
     queryKey: ["all-reports"],
@@ -51,13 +51,13 @@ export default function ReportSectionForm({
       className="max-w-xl space-y-2"
     >
       <div>
-        <Label htmlFor="name">Report Section Name</Label>
+        <Label htmlFor="name">Taxonomy Name</Label>
         <Input
           type="text"
           id="name"
           name="name"
           required
-          placeholder="e.g. Current Assets"
+          placeholder="e.g. Balance Sheet"
           value={formData.name}
           onChange={(e) =>
             setFormData((prevState) => ({ ...prevState, name: e.target.value }))
@@ -90,25 +90,25 @@ export default function ReportSectionForm({
         </Select>
       </div>
       <div>
-        <Label htmlFor="order">Set Order</Label>
+        <Label htmlFor="name">Description</Label>
         <Input
-          type="number"
-          id="order"
-          name="order"
-          value={formData.orderIndex}
+          type="text"
+          id="description"
+          name="description"
           required
-          min={0}
+          placeholder="e.g. Propery, plant, equipment, Revenue/Sales"
+          value={formData.description}
           onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              orderIndex: e.target.value === "" ? "" : Number(e.target.value),
+            setFormData((prevState) => ({
+              ...prevState,
+              description: e.target.value,
             }))
           }
         />
       </div>
       <div className="space-x-2 flex justify-end">
         <Button type="submit" variant="default">
-          {isEdit ? "Save Changes" : "Add Report"}
+          {isEdit ? "Save Changes" : "Add Taxonomy"}
         </Button>
         <Button type="button" variant="secondary" onClick={onClear}>
           Clear

@@ -7,6 +7,7 @@ import AssetTypeSettings from "../components/AssetTypeSettings";
 import { Card } from "../components/ui/card";
 import ReportSettings from "../components/ReportSettings";
 import ReportSectionSettings from "../components/ReportSectionSettings";
+import TaxonomySettings from "../components/TaxonomySettings";
 
 export const Route = createLazyFileRoute("/settings")({
   component: RouteComponent,
@@ -21,6 +22,7 @@ function RouteComponent() {
     { id: "assetType", label: "Asset Type" },
     { id: "report", label: "Report" },
     { id: "reportSection", label: "Report Section" },
+    { id: "taxonomy", label: "Taxonomy" },
   ];
 
   const renderContent = () => {
@@ -35,6 +37,8 @@ function RouteComponent() {
         return <ReportSettings />;
       case "reportSection":
         return <ReportSectionSettings />;
+      case "taxonomy":
+        return <TaxonomySettings />;
     }
   };
 
