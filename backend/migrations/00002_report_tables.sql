@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS report_section (
 CREATE TABLE IF NOT EXISTS taxonomy (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    report_id TEXT NOT NULL REFERENCES report(id),
     created_at TEXT NOT NULL DEFAULT current_timestamp,
     updated_at TEXT NOT NULL DEFAULT current_timestamp
 );

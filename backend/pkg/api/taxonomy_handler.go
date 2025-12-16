@@ -29,14 +29,14 @@ func (handler *TaxonomyHandler) AddTaxonomy(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	createdOperation, err := handler.store.AddTaxonomy(&taxonomy)
+	createdTaxonomy, err := handler.store.AddTaxonomy(&taxonomy)
 	if err != nil {
 		handler.logger.Printf("ERROR: api:AddTaxonomy add taxonomy: %v", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error adding taxonomy: %v", err)})
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"taxonomy": createdOperation})
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"taxonomy": createdTaxonomy})
 }
 
 func (handler *TaxonomyHandler) GetAllTaxonomies(w http.ResponseWriter, r *http.Request) {
@@ -90,8 +90,10 @@ func (handler *TaxonomyHandler) UpdateTaxonomy(w http.ResponseWriter, r *http.Re
 	}
 
 	var updateTaxonomy struct {
-		ID   *string `json:"id"`
-		Name *string `json:"name"`
+		ID          *string `json:"id"`
+		Name        *string `json:"name"`
+		Description *string `json:"description"`
+		ReportId    *string `json:"reportId"`
 	}
 	err = json.NewDecoder(r.Body).Decode(&updateTaxonomy)
 	if err != nil {
@@ -102,6 +104,12 @@ func (handler *TaxonomyHandler) UpdateTaxonomy(w http.ResponseWriter, r *http.Re
 
 	if updateTaxonomy.Name != nil {
 		existingTaxonomy.Name = *updateTaxonomy.Name
+	}
+	if updateTaxonomy.Description != nil {
+		existingTaxonomy.Description = *updateTaxonomy.Description
+	}
+	if updateTaxonomy.ReportId != nil {
+		existingTaxonomy.ReportId = *updateTaxonomy.ReportId
 	}
 
 	err = handler.store.UpdateTaxonomy(existingTaxonomy)

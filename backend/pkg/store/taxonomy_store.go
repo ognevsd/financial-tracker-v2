@@ -7,8 +7,11 @@ import (
 )
 
 type Taxonomy struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	ReportId    string `json:"reportId"`
+	ReportName  string `json:"reportName"`
 }
 
 type SqliteTaxonomyStore struct {
@@ -29,12 +32,18 @@ type TaxonomyStore interface {
 
 func (store *SqliteTaxonomyStore) AddTaxonomy(taxonomy *Taxonomy) (*Taxonomy, error) {
 	query :=
-		`INSERT INTO taxonomy (id, name)
-		VALUES ($1, $2)
+		`INSERT INTO taxonomy (id, name, description, report_id)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
 		`
 	newTaxonomyId := uuid.New().String()
-	err := store.db.QueryRow(query, newTaxonomyId, taxonomy.Name).Scan(&taxonomy.ID)
+	err := store.db.QueryRow(
+		query,
+		newTaxonomyId,
+		taxonomy.Name,
+		taxonomy.Description,
+		taxonomy.ReportId,
+	).Scan(&taxonomy.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +54,12 @@ func (store *SqliteTaxonomyStore) AddTaxonomy(taxonomy *Taxonomy) (*Taxonomy, er
 func (store *SqliteTaxonomyStore) GetTaxonomyById(id string) (*Taxonomy, error) {
 	taxonomy := &Taxonomy{}
 	query :=
-		`SELECT id, name
+		`SELECT id, name, description, report_id
 		FROM taxonomy
 		WHERE id = $1
 		`
 
-	err := store.db.QueryRow(query, id).Scan(&taxonomy.ID, &taxonomy.Name)
+	err := store.db.QueryRow(query, id).Scan(&taxonomy.ID, &taxonomy.Name, &taxonomy.Description, &taxonomy.ReportId)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +68,12 @@ func (store *SqliteTaxonomyStore) GetTaxonomyById(id string) (*Taxonomy, error) 
 }
 
 func (store *SqliteTaxonomyStore) GetAllTaxonomies() ([]*Taxonomy, error) {
-	query := `SELECT id, name FROM taxonomy`
-	var operations []*Taxonomy
+	query := `
+	SELECT t.id, t.name, t.description, t.report_id, r.name
+	FROM taxonomy t
+	INNER JOIN report r ON t.report_id = r.id
+	`
+	var taxonomies []*Taxonomy
 
 	rows, err := store.db.Query(query)
 	if err != nil {
@@ -69,19 +82,25 @@ func (store *SqliteTaxonomyStore) GetAllTaxonomies() ([]*Taxonomy, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		op := &Taxonomy{}
-		err := rows.Scan(&op.ID, &op.Name)
+		taxonomy := &Taxonomy{}
+		err := rows.Scan(
+			&taxonomy.ID,
+			&taxonomy.Name,
+			&taxonomy.Description,
+			&taxonomy.ReportId,
+			&taxonomy.ReportName,
+		)
 		if err != nil {
 			return nil, err
 		}
-		operations = append(operations, op)
+		taxonomies = append(taxonomies, taxonomy)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return operations, nil
+	return taxonomies, nil
 }
 
 func (store *SqliteTaxonomyStore) UpdateTaxonomy(taxonomy *Taxonomy) error {
@@ -93,11 +112,11 @@ func (store *SqliteTaxonomyStore) UpdateTaxonomy(taxonomy *Taxonomy) error {
 
 	query :=
 		`UPDATE taxonomy
-		SET name = $1
-		WHERE id = $2
+		SET name = $1, description = $2, report_id = $3
+		WHERE id = $4
 		`
 
-	res, err := tx.Exec(query, taxonomy.Name, taxonomy.ID)
+	res, err := tx.Exec(query, taxonomy.Name, taxonomy.Description, taxonomy.ReportId, taxonomy.ID)
 	if err != nil {
 		return err
 	}
