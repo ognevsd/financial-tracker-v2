@@ -46,6 +46,12 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Post("/api/report-section", app.ReportSectionHandler.AddReportSection)
 	r.Delete("/api/report-section/{id}", app.ReportSectionHandler.DeleteReportSection)
 
+	r.Get("/api/taxonomy", app.TaxonomyHandler.GetAllTaxonomies)
+	r.Get("/api/taxonomy/{id}", app.TaxonomyHandler.GetTaxonomyById)
+	r.Put("/api/taxonomy/{id}", app.TaxonomyHandler.UpdateTaxonomy)
+	r.Post("/api/taxonomy", app.TaxonomyHandler.AddTaxonomy)
+	r.Delete("/api/taxonomy/{id}", app.TaxonomyHandler.DeleteTaxonomy)
+
 	r.NotFound(app.ServeStaticFiles)
 
 	return r
