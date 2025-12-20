@@ -4,8 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/ognevsd/financial-tracker-v2/migrations"
 	"github.com/ognevsd/financial-tracker-v2/pkg/api"
@@ -16,6 +19,7 @@ const StaticFiles string = "../frontend/dist"
 
 type Application struct {
 	Logger               *log.Logger
+	NewLogger            *slog.Logger
 	TransactionHandler   *api.TransactionHandler
 	CurrencyHandler      *api.CurrencyHandler
 	OperationHandler     *api.OperationHandler
@@ -27,8 +31,33 @@ type Application struct {
 }
 
 func New() (*Application, error) {
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	opts := &slog.HandlerOptions{
+		AddSource: true,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey && len(groups) == 0 {
+				t := a.Value.Time()
+				a.Value = slog.TimeValue(t.Truncate(time.Second))
+				return a
+			}
+			if a.Key == slog.SourceKey {
+				src := a.Value.Any().(*slog.Source)
+
+				file := filepath.Base(src.File)
+				dir := filepath.Dir(src.File)
+				pkg := filepath.Base(dir)
+
+				src.File = pkg + ":" + file
+				src.Function = ""
+				return slog.Any(a.Key, src)
+			}
+			return a
+		},
+	}
+	logger := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
+	newLogger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
+
 	sqliteDB, err := store.Open()
+
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +65,7 @@ func New() (*Application, error) {
 	if err != nil {
 		panic(err)
 	}
+
 	// stores will go here
 	currencyStore := store.NewSqliteCurrencyStore(sqliteDB)
 	operationStore := store.NewOperationStore(sqliteDB)
@@ -56,6 +86,7 @@ func New() (*Application, error) {
 
 	app := &Application{
 		Logger:               logger,
+		NewLogger:            newLogger,
 		TransactionHandler:   transactionHandler,
 		CurrencyHandler:      currencyHandler,
 		OperationHandler:     operationHandler,
