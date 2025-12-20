@@ -52,6 +52,8 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Post("/api/taxonomy", app.TaxonomyHandler.AddTaxonomy)
 	r.Delete("/api/taxonomy/{id}", app.TaxonomyHandler.DeleteTaxonomy)
 
+	r.Post("/api/fieldValue", app.FieldValueHandler.AddFieldValue)
+
 	r.NotFound(app.ServeStaticFiles)
 
 	return r
