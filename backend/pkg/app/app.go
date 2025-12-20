@@ -81,7 +81,7 @@ func New() (*Application, error) {
 	currencyHandler := api.NewCurrencyHandler(currencyStore, logger)
 	operationHandler := api.NewOperationHandler(operationStore, logger)
 	assetTypeHandler := api.NewAssetTypeHandler(assetTypeStore, logger)
-	transactionHandler := api.NewTransactionHandler(transactionStore, logger)
+	transactionHandler := api.NewTransactionHandler(transactionStore, logger, newLogger)
 	reportHandler := api.NewReportHandler(reportStore, logger)
 	reportSectionHandler := api.NewReportSectionHandler(reportSectionStore, logger)
 	taxonomyHandler := api.NewTaxonomyHandler(taxonomyStore, logger)

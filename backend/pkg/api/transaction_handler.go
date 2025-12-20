@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/ognevsd/financial-tracker-v2/pkg/store"
@@ -12,12 +13,13 @@ import (
 )
 
 type TransactionHandler struct {
-	logger *log.Logger
-	store  store.TransactionStore
+	logger    *log.Logger
+	newLogger *slog.Logger
+	store     store.TransactionStore
 }
 
-func NewTransactionHandler(store store.TransactionStore, logger *log.Logger) *TransactionHandler {
-	return &TransactionHandler{store: store, logger: logger}
+func NewTransactionHandler(store store.TransactionStore, logger *log.Logger, newLogger *slog.Logger) *TransactionHandler {
+	return &TransactionHandler{store: store, logger: logger, newLogger: newLogger}
 }
 
 func (handler *TransactionHandler) AddTransaction(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +60,7 @@ func (handler *TransactionHandler) GetTransactionById(w http.ResponseWriter, r *
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error getting id from slug: %v", err)})
 		return
 	}
+	handler.newLogger.Info("Getting transaction with id", "id", id)
 	transaction, err := handler.store.GetTransactionById(id)
 	if err == sql.ErrNoRows {
 		utils.WriteJSON(w, http.StatusNotFound, utils.Envelope{"error": fmt.Sprintf("Transaction with id: %v not found", err)})
