@@ -30,6 +30,7 @@ func (handler *TransactionHandler) AddTransaction(w http.ResponseWriter, r *http
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Cannot parse request body: %v", err)})
 		return
 	}
+	handler.newLogger.Info("Adding transaction", "transaction", transaction)
 
 	createdTransaction, err := handler.store.AddTransaction(&transaction)
 	if err != nil {
