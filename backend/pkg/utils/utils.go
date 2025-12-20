@@ -31,3 +31,7 @@ func ReadIdParam(r *http.Request) (string, error) {
 
 	return idParam, nil
 }
+
+func ErrorPayload(errorMessage string) Envelope {
+	return Envelope{"error": errorMessage}
+}
