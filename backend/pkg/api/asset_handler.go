@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -46,4 +47,26 @@ func (handler *AssetHandler) GetAllAssets(w http.ResponseWriter, r *http.Request
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"asset": assets})
+}
+
+func (handler *AssetHandler) GetAssetById(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.ReadIdParam(r)
+	if err != nil {
+		handler.logger.Error("Parse id from url", "error", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload(fmt.Sprintf("Cannot get id from url: %v", err)))
+		return
+	}
+	asset, err := handler.store.GetAssetById(id)
+	if err == sql.ErrNoRows {
+		handler.logger.Info("Get asset from DB", "msg", fmt.Sprintf("Asset with id: %s not found", id))
+		utils.WriteJSON(w, http.StatusNotFound, utils.ErrorPayload(fmt.Sprintf("Asset with id %s not found", id)))
+		return
+	}
+	if err != nil {
+		handler.logger.Error("Get asset from DB", "error", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Internal error: %v", err)))
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"asset": asset})
 }

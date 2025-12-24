@@ -54,6 +54,10 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 
 	r.Post("/api/fieldValue", app.FieldValueHandler.AddFieldValue)
 
+	r.Get("/api/asset", app.AssetHandler.GetAllAssets)
+	r.Get("/api/asset/{id}", app.AssetHandler.GetAssetById)
+	r.Post("/api/asset", app.AssetHandler.AddAsset)
+
 	r.NotFound(app.ServeStaticFiles)
 
 	return r

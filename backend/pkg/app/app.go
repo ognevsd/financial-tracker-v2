@@ -28,6 +28,7 @@ type Application struct {
 	ReportSectionHandler *api.ReportSectionHandler
 	TaxonomyHandler      *api.TaxonomyHandler
 	FieldValueHandler    *api.FieldValueHandler
+	AssetHandler         *api.AssetHandler
 	DB                   *sql.DB
 }
 
@@ -76,6 +77,7 @@ func New() (*Application, error) {
 	reportSectionStore := store.NewSqliteReportSectionStore(sqliteDB)
 	taxonomyStore := store.NewTaxonomyStore(sqliteDB)
 	fieldValueStore := store.NewSqliteFieldValueStore(sqliteDB)
+	assetStore := store.NewSqliteAssetStore(sqliteDB)
 
 	// handlers will go here
 	currencyHandler := api.NewCurrencyHandler(currencyStore, logger)
@@ -86,6 +88,7 @@ func New() (*Application, error) {
 	reportSectionHandler := api.NewReportSectionHandler(reportSectionStore, logger)
 	taxonomyHandler := api.NewTaxonomyHandler(taxonomyStore, logger)
 	fieldValueHandler := api.NewFieldValueHandler(fieldValueStore, newLogger)
+	assetHandler := api.NewAssetHandler(assetStore, newLogger)
 
 	app := &Application{
 		Logger:               logger,
@@ -98,6 +101,7 @@ func New() (*Application, error) {
 		ReportSectionHandler: reportSectionHandler,
 		TaxonomyHandler:      taxonomyHandler,
 		FieldValueHandler:    fieldValueHandler,
+		AssetHandler:         assetHandler,
 		DB:                   sqliteDB,
 	}
 

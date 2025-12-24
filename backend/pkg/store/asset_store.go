@@ -28,6 +28,7 @@ func NewSqliteAssetStore(db *sql.DB) *SqliteAssetStore {
 type AssetStore interface {
 	AddAsset(*Asset) (*Asset, error)
 	GetAllAssets() ([]*Asset, error)
+	GetAssetById(id string) (*Asset, error)
 }
 
 func (store *SqliteAssetStore) AddAsset(asset *Asset) (*Asset, error) {
@@ -71,14 +72,14 @@ func (store *SqliteAssetStore) GetAllAssets() ([]*Asset, error) {
 	for rows.Next() {
 		asset := &Asset{}
 		err := rows.Scan(
-			asset.Id,
-			asset.Ticker,
-			asset.Name,
-			asset.AssetTypeId,
-			asset.Industry,
-			asset.Commodity,
-			asset.CurrencyId,
-			asset.ReportingMultiplicator,
+			&asset.Id,
+			&asset.Ticker,
+			&asset.Name,
+			&asset.AssetTypeId,
+			&asset.Industry,
+			&asset.Commodity,
+			&asset.CurrencyId,
+			&asset.ReportingMultiplicator,
 		)
 		if err != nil {
 			return nil, err
@@ -91,4 +92,28 @@ func (store *SqliteAssetStore) GetAllAssets() ([]*Asset, error) {
 	}
 
 	return assets, nil
+}
+
+func (store *SqliteAssetStore) GetAssetById(id string) (*Asset, error) {
+	query := `
+	SELECT id, symbol, name, type, industry, commodity, currency_id, rep_multiplicator
+	FROM asset
+	WHERE id = $1
+	`
+	asset := &Asset{}
+
+	err := store.db.QueryRow(query, id).Scan(
+		&asset.Id,
+		&asset.Ticker,
+		&asset.Name,
+		&asset.AssetTypeId,
+		&asset.Industry,
+		&asset.Commodity,
+		&asset.CurrencyId,
+		&asset.ReportingMultiplicator,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return asset, nil
 }
