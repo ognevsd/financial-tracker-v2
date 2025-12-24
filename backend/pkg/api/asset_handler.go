@@ -20,15 +20,15 @@ func NewAssetHandler(store store.AssetStore, logger *slog.Logger) *AssetHandler 
 }
 
 func (handler *AssetHandler) AddAsset(w http.ResponseWriter, r *http.Request) {
-	var asset *store.Asset
-	err := json.NewDecoder(r.Body).Decode(asset)
+	var asset store.Asset
+	err := json.NewDecoder(r.Body).Decode(&asset)
 	if err != nil {
 		handler.logger.Error("Decode request body", "error", err)
 		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload(fmt.Sprintf("Error when parsig request body: %v", err)))
 		return
 	}
 
-	createdAsset, err := handler.store.AddAsset(asset)
+	createdAsset, err := handler.store.AddAsset(&asset)
 	if err != nil {
 		handler.logger.Error("Add asset to DB", "error", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error adding asset to DB: %v", err)))
