@@ -12,8 +12,19 @@ interface ReportSectionsResponse {
   reportSection: ReportSectionTableData[];
 }
 
-export async function getAllReportSections(): Promise<ReportSectionsResponse> {
-  const resp = await fetch("/api/report-section", {
+export interface ReportSectionFilter {
+  reportId?: string;
+}
+
+export async function getAllReportSections(
+  filter: ReportSectionFilter = {},
+): Promise<ReportSectionsResponse> {
+  const url = new URL("/api/report-section", window.location.origin);
+  if (filter.reportId) {
+    url.searchParams.append("reportId", filter.reportId);
+  }
+
+  const resp = await fetch(url.toString(), {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

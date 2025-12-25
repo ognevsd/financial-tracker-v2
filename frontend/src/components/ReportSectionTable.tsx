@@ -20,7 +20,7 @@ export default function ReportSectionTable({
   });
 
   const { isLoading, data } = useQuery({
-    queryFn: getAllReportSections,
+    queryFn: () => getAllReportSections(),
     queryKey: ["all-report-sections"],
     staleTime: 120000,
   });
