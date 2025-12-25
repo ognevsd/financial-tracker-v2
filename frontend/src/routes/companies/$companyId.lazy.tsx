@@ -6,6 +6,9 @@ import {
 } from "@tanstack/react-router";
 import { Card } from "../../components/ui/card";
 import Button from "../../components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { getAllReports } from "../../api/report";
+import Loading from "../../components/Loading";
 
 export const Route = createLazyFileRoute("/companies/$companyId")({
   component: RouteComponent,
@@ -18,8 +21,16 @@ function RouteComponent() {
 
   const settingsItems = [
     { id: "main", link: "/", label: "Main" },
+    { id: "notes", link: "notes", label: "Notes" },
+    { id: "locations", link: "locations", label: "Locations" },
     { id: "details", link: "details", label: "Details" },
   ];
+
+  const { data, isLoading } = useQuery({
+    queryFn: getAllReports,
+    queryKey: ["all-reports"],
+    staleTime: 120_000,
+  });
 
   return (
     <div className="flex h-[calc(100vh-5rem)]">
@@ -45,6 +56,31 @@ function RouteComponent() {
                 </Button>
               );
             })}
+            <h3>Reports</h3>
+            {isLoading ? (
+              <Loading />
+            ) : (
+              data?.report.map((item) => {
+                const reportName = item.name.split(" ").join("-");
+                const targetPath = `/companies/$companyId/${reportName}`;
+                const isActive = matchRoute({
+                  to: targetPath,
+                  params: { companyId },
+                });
+                return (
+                  <Button
+                    key={item.id}
+                    className="w-full justify-start"
+                    variant={isActive ? "default" : "secondary"}
+                    onClick={() => {
+                      navigate({ to: targetPath, params: { companyId } });
+                    }}
+                  >
+                    {item.name}
+                  </Button>
+                );
+              })
+            )}
           </nav>
         </aside>
       </Card>
