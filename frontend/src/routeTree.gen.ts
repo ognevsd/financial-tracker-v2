@@ -26,6 +26,9 @@ const CompaniesCompanyIdIndexLazyRouteImport = createFileRoute(
 const CompaniesCompanyIdDetailsLazyRouteImport = createFileRoute(
   '/companies/$companyId/details',
 )()
+const CompaniesCompanyIdReportIdLazyRouteImport = createFileRoute(
+  '/companies/$companyId/$reportId',
+)()
 
 const TransactionsLazyRoute = TransactionsLazyRouteImport.update({
   id: '/transactions',
@@ -79,6 +82,14 @@ const CompaniesCompanyIdDetailsLazyRoute =
   } as any).lazy(() =>
     import('./routes/companies/$companyId/details.lazy').then((d) => d.Route),
   )
+const CompaniesCompanyIdReportIdLazyRoute =
+  CompaniesCompanyIdReportIdLazyRouteImport.update({
+    id: '/$reportId',
+    path: '/$reportId',
+    getParentRoute: () => CompaniesCompanyIdLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/companies/$companyId/$reportId.lazy').then((d) => d.Route),
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -87,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof TransactionsLazyRoute
   '/companies/$companyId': typeof CompaniesCompanyIdLazyRouteWithChildren
   '/companies': typeof CompaniesIndexLazyRoute
+  '/companies/$companyId/$reportId': typeof CompaniesCompanyIdReportIdLazyRoute
   '/companies/$companyId/details': typeof CompaniesCompanyIdDetailsLazyRoute
   '/companies/$companyId/': typeof CompaniesCompanyIdIndexLazyRoute
 }
@@ -96,6 +108,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsLazyRoute
   '/transactions': typeof TransactionsLazyRoute
   '/companies': typeof CompaniesIndexLazyRoute
+  '/companies/$companyId/$reportId': typeof CompaniesCompanyIdReportIdLazyRoute
   '/companies/$companyId/details': typeof CompaniesCompanyIdDetailsLazyRoute
   '/companies/$companyId': typeof CompaniesCompanyIdIndexLazyRoute
 }
@@ -107,6 +120,7 @@ export interface FileRoutesById {
   '/transactions': typeof TransactionsLazyRoute
   '/companies/$companyId': typeof CompaniesCompanyIdLazyRouteWithChildren
   '/companies/': typeof CompaniesIndexLazyRoute
+  '/companies/$companyId/$reportId': typeof CompaniesCompanyIdReportIdLazyRoute
   '/companies/$companyId/details': typeof CompaniesCompanyIdDetailsLazyRoute
   '/companies/$companyId/': typeof CompaniesCompanyIdIndexLazyRoute
 }
@@ -119,6 +133,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/companies/$companyId'
     | '/companies'
+    | '/companies/$companyId/$reportId'
     | '/companies/$companyId/details'
     | '/companies/$companyId/'
   fileRoutesByTo: FileRoutesByTo
@@ -128,6 +143,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/transactions'
     | '/companies'
+    | '/companies/$companyId/$reportId'
     | '/companies/$companyId/details'
     | '/companies/$companyId'
   id:
@@ -138,6 +154,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/companies/$companyId'
     | '/companies/'
+    | '/companies/$companyId/$reportId'
     | '/companies/$companyId/details'
     | '/companies/$companyId/'
   fileRoutesById: FileRoutesById
@@ -209,16 +226,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompaniesCompanyIdDetailsLazyRouteImport
       parentRoute: typeof CompaniesCompanyIdLazyRoute
     }
+    '/companies/$companyId/$reportId': {
+      id: '/companies/$companyId/$reportId'
+      path: '/$reportId'
+      fullPath: '/companies/$companyId/$reportId'
+      preLoaderRoute: typeof CompaniesCompanyIdReportIdLazyRouteImport
+      parentRoute: typeof CompaniesCompanyIdLazyRoute
+    }
   }
 }
 
 interface CompaniesCompanyIdLazyRouteChildren {
+  CompaniesCompanyIdReportIdLazyRoute: typeof CompaniesCompanyIdReportIdLazyRoute
   CompaniesCompanyIdDetailsLazyRoute: typeof CompaniesCompanyIdDetailsLazyRoute
   CompaniesCompanyIdIndexLazyRoute: typeof CompaniesCompanyIdIndexLazyRoute
 }
 
 const CompaniesCompanyIdLazyRouteChildren: CompaniesCompanyIdLazyRouteChildren =
   {
+    CompaniesCompanyIdReportIdLazyRoute: CompaniesCompanyIdReportIdLazyRoute,
     CompaniesCompanyIdDetailsLazyRoute: CompaniesCompanyIdDetailsLazyRoute,
     CompaniesCompanyIdIndexLazyRoute: CompaniesCompanyIdIndexLazyRoute,
   }
