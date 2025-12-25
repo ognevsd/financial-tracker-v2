@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS report_field (
     order_index INTEGER NOT NULL CHECK(order_index >= 0),
     report_id TEXT NOT NULL REFERENCES report(id),
     section_id TEXT NOT NULL REFERENCES report_section(id),
+    asset_id TEXT NOT NULL REFERENCES asset(id),
     taxonomy_id TEXT REFERENCES taxonomy(id),
     created_at TEXT NOT NULL DEFAULT current_timestamp,
     updated_at TEXT NOT NULL DEFAULT current_timestamp,
