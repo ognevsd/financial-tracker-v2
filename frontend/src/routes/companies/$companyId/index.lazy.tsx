@@ -7,5 +7,11 @@ export const Route = createLazyFileRoute("/companies/$companyId/")({
 function RouteComponent() {
   const { companyId } = Route.useParams();
 
-  return <div>Hello `/companies/${companyId}/`!</div>;
+  return (
+    <div>
+      <div>Company Name</div>
+      <div>Current Holdings</div>
+      <div>Dividiend yield details</div>
+    </div>
+  );
 }
