@@ -1,9 +1,6 @@
-import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { MoveDown, MoveUp, Plus, Trash2 } from "lucide-react";
 import Button from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Select, SelectOption } from "../../components/ui/select";
 import AssetTable from "../../components/AssetTable";
 import AssetForm from "../../components/AssetForm";
 import Modal from "../../components/Modal";

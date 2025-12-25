@@ -61,8 +61,7 @@ function RouteComponent() {
               <Loading />
             ) : (
               data?.report.map((item) => {
-                const reportName = item.name.split(" ").join("-");
-                const targetPath = `/companies/$companyId/${reportName}`;
+                const targetPath = `/companies/$companyId/${item.id}`;
                 const isActive = matchRoute({
                   to: targetPath,
                   params: { companyId },
