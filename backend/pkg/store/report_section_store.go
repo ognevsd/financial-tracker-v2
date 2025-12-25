@@ -23,10 +23,14 @@ func NewSqliteReportSectionStore(db *sql.DB) *SqliteReportStore {
 
 type ReportSectionStore interface {
 	AddReportSection(*ReportSection) (*ReportSection, error)
-	GetAllReportSections() ([]*ReportSection, error)
+	GetAllReportSections(filter ReportSectionFilter) ([]*ReportSection, error)
 	GetReportSectionById(id string) (*ReportSection, error)
 	UpdateReportSection(*ReportSection) error
 	DeleteReportSectionById(id string) error
+}
+
+type ReportSectionFilter struct {
+	ReportId string
 }
 
 func (store *SqliteReportStore) AddReportSection(reportSection *ReportSection) (*ReportSection, error) {
@@ -50,11 +54,23 @@ func (store *SqliteReportStore) AddReportSection(reportSection *ReportSection) (
 	return reportSection, nil
 }
 
-func (store *SqliteReportStore) GetAllReportSections() ([]*ReportSection, error) {
-	query := `SELECT id, name, report_id, order_index FROM report_section`
+func (store *SqliteReportStore) GetAllReportSections(filter ReportSectionFilter) ([]*ReportSection, error) {
+	query := `
+	SELECT id, name, report_id, order_index FROM report_section
+	WHERE 1=1
+	`
+	// NOTE: WHERE 1=1 is a hack that allows you to just add conditions to the statement
+
+	var args []any
+
+	if filter.ReportId != "" {
+		query += "AND report_id = ?"
+		args = append(args, filter.ReportId)
+	}
+
 	var reportSections []*ReportSection
 
-	rows, err := store.db.Query(query)
+	rows, err := store.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}

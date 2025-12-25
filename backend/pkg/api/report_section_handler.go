@@ -40,7 +40,10 @@ func (handler *ReportSectionHandler) AddReportSection(w http.ResponseWriter, r *
 }
 
 func (handler *ReportSectionHandler) GetAllReportSections(w http.ResponseWriter, r *http.Request) {
-	reportSections, err := handler.store.GetAllReportSections()
+	filter := store.ReportSectionFilter{
+		ReportId: r.URL.Query().Get("reportId"),
+	}
+	reportSections, err := handler.store.GetAllReportSections(filter)
 	if err != nil {
 		handler.logger.Printf("ERROR api:GetAllReportSections get reportSections from DB: %v", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": fmt.Sprintf("Error getting reportSections from DB: %v", err)})
