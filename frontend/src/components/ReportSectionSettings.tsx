@@ -4,14 +4,7 @@ import Toast from "../components/Toast";
 import Modal from "../components/Modal";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useEscModalClose } from "../hooks/useEscModalClose";
-import type { AssetTypeFormData } from "../types/assetType";
 import { defaultToastData, type ToastData } from "../types/toast";
-import {
-  addReport,
-  deleteReportById,
-  getReportById,
-  updateReport,
-} from "../api/report";
 import ReportSectionTable from "./ReportSectionTable";
 import ReportSectionForm from "./ReportSectionForm";
 import type { ReportSectionFormData } from "../types/reportSection";
@@ -27,6 +20,7 @@ const defaultFormData: ReportSectionFormData = {
   name: "",
   reportId: "",
   orderIndex: "",
+  parentId: "",
 };
 
 export default function ReportSectionSettings() {
@@ -35,6 +29,11 @@ export default function ReportSectionSettings() {
   const [toastData, setToastData] = useState<ToastData>(defaultToastData);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [editReportId, setEditReportId] = useState<string | null>(null);
+  const [parentId, setParentId] = useState<string | null>(null);
+  const [parentSectionName, setParentSectionName] = useState<string | null>(
+    null,
+  );
+  const [isAddSubsection, setIsAddSubseciton] = useState<boolean>(false);
 
   const queryClient = useQueryClient();
 
@@ -43,6 +42,9 @@ export default function ReportSectionSettings() {
   const onModalClose = () => {
     setShowModal(false);
     setEditReportId(null);
+    setParentId(null);
+    setParentSectionName(null);
+    setIsAddSubseciton(false);
     setFormData(defaultFormData);
   };
 
@@ -52,7 +54,7 @@ export default function ReportSectionSettings() {
   const addReportSectionMutation = useMutation({
     mutationFn: () => addReportSection(formData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-report-sections"] });
+      queryClient.invalidateQueries({ queryKey: ["report-section"] });
       setToastData({
         show: true,
         message: `Report section ${formData.name} added successfully`,
@@ -86,7 +88,7 @@ export default function ReportSectionSettings() {
   const editReportSectionMutation = useMutation({
     mutationFn: (id: string) => updateReportSection(id, formData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-report-sections"] });
+      queryClient.invalidateQueries({ queryKey: ["report-section"] });
       setToastData({
         show: true,
         message: `Report section ${formData.name} updated`,
@@ -107,7 +109,7 @@ export default function ReportSectionSettings() {
   const deleteReportSectionMutation = useMutation({
     mutationFn: (id: string) => deleteReportSectionById(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-report-sections"] });
+      queryClient.invalidateQueries({ queryKey: ["report-section"] });
       setToastData({
         show: true,
         message: "Report section deleted successfully",
@@ -138,6 +140,13 @@ export default function ReportSectionSettings() {
     setShowModal(false);
   };
 
+  const onAddSubsection = (id: string, parentName: string) => {
+    console.log("Adding subsection for:", id, parentName);
+    setParentSectionName(parentName);
+    setParentId(id);
+    setIsAddSubseciton(true);
+    setShowModal(true);
+  };
   return (
     <div className="space-y-2">
       <ReportSectionForm
@@ -146,10 +155,12 @@ export default function ReportSectionSettings() {
         onSubmit={submitForm}
         onClear={clearForm}
         isEdit={false}
+        isSubsectionAdd={false}
       />
       <ReportSectionTable
         onEdit={onEditOperation}
         onDelete={deleteReportSectionMutation.mutate}
+        onAddSubsection={onAddSubsection}
       />
       <Toast
         show={toastData.show}
@@ -163,7 +174,10 @@ export default function ReportSectionSettings() {
           setFormData={setFormData}
           onSubmit={submitForm}
           onClear={clearForm}
-          isEdit={true}
+          isEdit={!isAddSubsection}
+          isSubsectionAdd={isAddSubsection}
+          parentSectionName={parentSectionName}
+          parentSectionId={parentId}
         />
       </Modal>
     </div>

@@ -51,6 +51,8 @@ export async function addReportSection(
       name: reportSectionData.name,
       reportId: reportSectionData.reportId,
       orderIndex: Number(reportSectionData.orderIndex),
+      parentId:
+        reportSectionData.parentId === "" ? null : reportSectionData.parentId,
     }),
   });
 

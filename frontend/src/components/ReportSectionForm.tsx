@@ -13,6 +13,9 @@ interface ReportSectionFormProps {
   onSubmit: () => void;
   onClear: () => void;
   isEdit: boolean;
+  isSubsectionAdd: boolean;
+  parentSectionId?: string | null;
+  parentSectionName?: string | null;
 }
 
 export default function ReportSectionForm({
@@ -21,6 +24,9 @@ export default function ReportSectionForm({
   onSubmit,
   onClear,
   isEdit,
+  isSubsectionAdd,
+  parentSectionName,
+  parentSectionId,
 }: ReportSectionFormProps) {
   const { isLoading: isReportsLoading, data: reports } = useQuery({
     queryFn: getAllReports,
@@ -42,78 +48,94 @@ export default function ReportSectionForm({
     }
   }, [isReportsLoading, formData]);
 
+  useEffect(() => {
+    if (isSubsectionAdd) {
+      setFormData((prev) => ({ ...prev, parentId: parentSectionId || null }));
+    }
+  }, []);
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit();
-      }}
-      className="max-w-xl space-y-2"
-    >
-      <div>
-        <Label htmlFor="name">Report Section Name</Label>
-        <Input
-          type="text"
-          id="name"
-          name="name"
-          required
-          placeholder="e.g. Current Assets"
-          value={formData.name}
-          onChange={(e) =>
-            setFormData((prevState) => ({ ...prevState, name: e.target.value }))
-          }
-        />
-      </div>
-      <div>
-        <Label htmlFor="report">Select report</Label>
-        <Select
-          id="report"
-          name="report"
-          value={formData.reportId}
-          required
-          onChange={(e) =>
-            setFormData((prevState) => ({
-              ...prevState,
-              reportId: e.target.value,
-            }))
-          }
-        >
-          {reports?.report === null ? (
-            <SelectOption></SelectOption>
-          ) : (
-            reports?.report.map((report) => (
-              <SelectOption key={report.id} value={report.id}>
-                {report.name}
-              </SelectOption>
-            ))
-          )}
-        </Select>
-      </div>
-      <div>
-        <Label htmlFor="order">Set Order</Label>
-        <Input
-          type="number"
-          id="order"
-          name="order"
-          value={formData.orderIndex}
-          required
-          min={0}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              orderIndex: e.target.value === "" ? "" : Number(e.target.value),
-            }))
-          }
-        />
-      </div>
-      <div className="space-x-2 flex justify-end">
-        <Button type="submit" variant="default">
-          {isEdit ? "Save Changes" : "Add Report"}
-        </Button>
-        <Button type="button" variant="secondary" onClick={onClear}>
-          Clear
-        </Button>
-      </div>
-    </form>
+    <>
+      {isSubsectionAdd && <h3>Adding subsection for {parentSectionName}</h3>}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+        className="max-w-xl space-y-2"
+      >
+        <div>
+          <Label htmlFor="name">
+            Report {isSubsectionAdd ? "Subsection" : "Section"} Name
+          </Label>
+          <Input
+            type="text"
+            id="name"
+            name="name"
+            required
+            placeholder="e.g. Current Assets"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData((prevState) => ({
+                ...prevState,
+                name: e.target.value,
+              }))
+            }
+          />
+        </div>
+        {!isSubsectionAdd && (
+          <div>
+            <Label htmlFor="report">Select report</Label>
+            <Select
+              id="report"
+              name="report"
+              value={formData.reportId}
+              required
+              onChange={(e) =>
+                setFormData((prevState) => ({
+                  ...prevState,
+                  reportId: e.target.value,
+                }))
+              }
+            >
+              {reports?.report === null ? (
+                <SelectOption></SelectOption>
+              ) : (
+                reports?.report.map((report) => (
+                  <SelectOption key={report.id} value={report.id}>
+                    {report.name}
+                  </SelectOption>
+                ))
+              )}
+            </Select>
+          </div>
+        )}
+        <div>
+          <Label htmlFor="order">Set Order</Label>
+          <Input
+            type="number"
+            id="order"
+            name="order"
+            value={formData.orderIndex}
+            required
+            min={0}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                orderIndex: e.target.value === "" ? "" : Number(e.target.value),
+              }))
+            }
+          />
+        </div>
+        <div className="space-x-2 flex justify-end">
+          <Button type="submit" variant="default">
+            {isEdit ? "Save Changes" : "Add Report Section"}
+          </Button>
+          <Button type="button" variant="secondary" onClick={onClear}>
+            Clear
+          </Button>
+        </div>
+      </form>
+    </>
   );
 }

@@ -1,17 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
-import { Pencil, Trash2 } from "lucide-react";
+import { ListTree, Pencil, Trash2 } from "lucide-react";
 import Button from "./ui/button";
 import { getAllReports } from "../api/report";
 import { getAllReportSections } from "../api/reportSection";
+import type { ReportSectionTableData } from "../types/reportSection";
 
 interface OperationTableProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onAddSubsection: (id: string, parentName: string) => void;
 }
+
+const buildSectionHierarchy = (items: ReportSectionTableData[]) => {
+  const itemMap = {};
+  const roots = [];
+
+  items.forEach((item) => {
+    itemMap[item.id] = { ...item, children: [] };
+  });
+
+  items.forEach((item) => {
+    if (item.parentId === "" || item.parentId === null) {
+      roots.push(itemMap[item.id]);
+    } else if (itemMap[item.parentId]) {
+      itemMap[item.parentId].children.push(itemMap[item.id]);
+    }
+  });
+
+  return roots;
+};
 
 export default function ReportSectionTable({
   onEdit,
   onDelete,
+  onAddSubsection,
 }: OperationTableProps) {
   const { isLoading: isReportsLoading, data: reports } = useQuery({
     queryFn: getAllReports,
@@ -21,7 +43,7 @@ export default function ReportSectionTable({
 
   const { isLoading, data } = useQuery({
     queryFn: () => getAllReportSections(),
-    queryKey: ["all-report-sections"],
+    queryKey: ["report-section", "all"],
     staleTime: 120000,
   });
 
@@ -33,6 +55,10 @@ export default function ReportSectionTable({
     return <div>No reports in DB</div>;
   }
 
+  const hierarchy = buildSectionHierarchy(data?.reportSection);
+
+  console.log(hierarchy);
+
   return (
     <div className="space-y-4">
       {reports?.report.map((report) => (
@@ -41,8 +67,8 @@ export default function ReportSectionTable({
           {data?.reportSection === null ? (
             <div>No report sections for {report.name} in DB</div>
           ) : (
-            <table className="overflow-hidden w-full max-w-2xl">
-              <thead className="bg-gray-200">
+            <table className="overflow-hidden w-full max-w-3xl">
+              <thead className="bg-gray-200 text-left">
                 <tr>
                   <th className="px-4 py-2 min-w-100">Name</th>
                   <th className="px-4 py-2">Order Index</th>
@@ -61,6 +87,13 @@ export default function ReportSectionTable({
                         <td className="px-4 py-2">{row.orderIndex}</td>
                         <td className="px-4 py-2">
                           <div className="flex flex-row space-x-1 justify-end">
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              onClick={() => onAddSubsection(row.id, row.name)}
+                            >
+                              <ListTree />
+                            </Button>
                             <Button
                               type="button"
                               variant="secondary"

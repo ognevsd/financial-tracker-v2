@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS report_section (
     name TEXT NOT NULL UNIQUE,
     report_id TEXT REFERENCES report(id),
     order_index INTEGER NOT NULL CHECK(order_index >= 0),
+    parent_id TEXT REFERENCES report_section(id),
     created_at TEXT NOT NULL DEFAULT current_timestamp,
-    updated_at TEXT NOT NULL DEFAULT current_timestamp,
-    UNIQUE(report_id, order_index)
+    updated_at TEXT NOT NULL DEFAULT current_timestamp
 );
 
 CREATE TABLE IF NOT EXISTS taxonomy (

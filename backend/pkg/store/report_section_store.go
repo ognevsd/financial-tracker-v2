@@ -11,6 +11,7 @@ type ReportSection struct {
 	Name       string `json:"name"`
 	ReportId   string `json:"reportId"`
 	OrderIndex int    `json:"orderIndex"`
+	ParentId   string `json:"parentId"`
 }
 
 type SqliteReportSectionStore struct {
@@ -35,8 +36,8 @@ type ReportSectionFilter struct {
 
 func (store *SqliteReportStore) AddReportSection(reportSection *ReportSection) (*ReportSection, error) {
 	query :=
-		`INSERT INTO report_section (id, name, report_id, order_index)
-		VALUES ($1, $2, $3, $4)
+		`INSERT INTO report_section (id, name, report_id, order_index, parent_id)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING (id)
 		`
 	newReportId := uuid.New().String()
@@ -46,6 +47,7 @@ func (store *SqliteReportStore) AddReportSection(reportSection *ReportSection) (
 		reportSection.Name,
 		reportSection.ReportId,
 		reportSection.OrderIndex,
+		reportSection.ParentId,
 	).Scan(&reportSection.ID)
 	if err != nil {
 		return nil, err
@@ -56,7 +58,7 @@ func (store *SqliteReportStore) AddReportSection(reportSection *ReportSection) (
 
 func (store *SqliteReportStore) GetAllReportSections(filter ReportSectionFilter) ([]*ReportSection, error) {
 	query := `
-	SELECT id, name, report_id, order_index FROM report_section
+	SELECT id, name, report_id, order_index, parent_id FROM report_section
 	WHERE 1=1
 	`
 	// NOTE: WHERE 1=1 is a hack that allows you to just add conditions to the statement
@@ -83,6 +85,7 @@ func (store *SqliteReportStore) GetAllReportSections(filter ReportSectionFilter)
 			&reportSection.Name,
 			&reportSection.ReportId,
 			&reportSection.OrderIndex,
+			&reportSection.ParentId,
 		)
 		if err != nil {
 			return nil, err
@@ -99,7 +102,7 @@ func (store *SqliteReportStore) GetAllReportSections(filter ReportSectionFilter)
 }
 
 func (store *SqliteReportStore) GetReportSectionById(id string) (*ReportSection, error) {
-	query := `SELECT id, name, report_id, order_index FROM report_section WHERE id = $1`
+	query := `SELECT id, name, report_id, order_index, parent_id FROM report_section WHERE id = $1`
 
 	reportSection := &ReportSection{}
 
@@ -108,6 +111,7 @@ func (store *SqliteReportStore) GetReportSectionById(id string) (*ReportSection,
 		&reportSection.Name,
 		&reportSection.ReportId,
 		&reportSection.OrderIndex,
+		&reportSection.ParentId,
 	)
 	if err != nil {
 		return nil, err
@@ -119,8 +123,8 @@ func (store *SqliteReportStore) GetReportSectionById(id string) (*ReportSection,
 func (store *SqliteReportStore) UpdateReportSection(reportSection *ReportSection) error {
 	query :=
 		`UPDATE report_section
-		SET name = $1, report_id = $2, order_index = $3
-		WHERE id = $4
+		SET name = $1, report_id = $2, order_index = $3, parent_id = $4
+		WHERE id = $5
 		`
 
 	res, err := store.db.Exec(
@@ -128,6 +132,7 @@ func (store *SqliteReportStore) UpdateReportSection(reportSection *ReportSection
 		reportSection.Name,
 		reportSection.ReportId,
 		reportSection.OrderIndex,
+		reportSection.ParentId,
 		reportSection.ID,
 	)
 	if err != nil {
