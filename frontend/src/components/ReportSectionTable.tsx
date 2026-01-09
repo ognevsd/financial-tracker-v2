@@ -4,6 +4,8 @@ import Button from "./ui/button";
 import { getAllReports } from "../api/report";
 import { getAllReportSections } from "../api/reportSection";
 import type { ReportSectionTableData } from "../types/reportSection";
+import { Fragment } from "react/jsx-runtime";
+import { GLYPH } from "../lib/utils";
 
 interface OperationTableProps {
   onEdit: (id: string) => void;
@@ -11,9 +13,15 @@ interface OperationTableProps {
   onAddSubsection: (id: string, parentName: string) => void;
 }
 
-const buildSectionHierarchy = (items: ReportSectionTableData[]) => {
-  const itemMap = {};
-  const roots = [];
+interface Hierarchy extends ReportSectionTableData {
+  children: Hierarchy[];
+}
+
+const buildSectionHierarchy = (
+  items: ReportSectionTableData[],
+): Hierarchy[] => {
+  const itemMap: Record<string, Hierarchy> = {};
+  const roots: Hierarchy[] = [];
 
   items.forEach((item) => {
     itemMap[item.id] = { ...item, children: [] };
@@ -30,11 +38,60 @@ const buildSectionHierarchy = (items: ReportSectionTableData[]) => {
   return roots;
 };
 
+const calculatePrefix = (level: number): string => {
+  if (level === 0) {
+    return "";
+  }
+  return "└" + "─".repeat(Math.max(0, level - 1)) + " ";
+};
+
 export default function ReportSectionTable({
   onEdit,
   onDelete,
   onAddSubsection,
 }: OperationTableProps) {
+  const renderRow = (item: Hierarchy, level: number, index: number) => {
+    const prefix = calculatePrefix(level);
+
+    return (
+      <Fragment key={item.id}>
+        <tr className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+          <td className="px-4 py-2">
+            {prefix}
+            {item.name}
+          </td>
+          <td className="px-4 py-2">{item.orderIndex}</td>
+          <td className="px-4 py-2">
+            <div className="flex flex-row space-x-1 justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => onAddSubsection(item.id, item.name)}
+              >
+                <ListTree />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => onEdit(item.id)}
+              >
+                <Pencil />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => onDelete(item.id)}
+              >
+                <Trash2 />
+              </Button>
+            </div>
+          </td>
+        </tr>
+        {item.children.map((child) => renderRow(child, level + 1, index + 1))}
+      </Fragment>
+    );
+  };
+
   const { isLoading: isReportsLoading, data: reports } = useQuery({
     queryFn: getAllReports,
     queryKey: ["all-reports"],
@@ -55,9 +112,7 @@ export default function ReportSectionTable({
     return <div>No reports in DB</div>;
   }
 
-  const hierarchy = buildSectionHierarchy(data?.reportSection);
-
-  console.log(hierarchy);
+  const hierarchy = buildSectionHierarchy(data?.reportSection || []);
 
   return (
     <div className="space-y-4">
@@ -76,43 +131,7 @@ export default function ReportSectionTable({
                 </tr>
               </thead>
               <tbody>
-                {data?.reportSection.map(
-                  (row, index) =>
-                    row.reportId === report.id && (
-                      <tr
-                        key={row.id}
-                        className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                      >
-                        <td className="px-4 py-2">{row.name}</td>
-                        <td className="px-4 py-2">{row.orderIndex}</td>
-                        <td className="px-4 py-2">
-                          <div className="flex flex-row space-x-1 justify-end">
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              onClick={() => onAddSubsection(row.id, row.name)}
-                            >
-                              <ListTree />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              onClick={() => onEdit(row.id)}
-                            >
-                              <Pencil />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              onClick={() => onDelete(row.id)}
-                            >
-                              <Trash2 />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ),
-                )}
+                {hierarchy.map((item, index) => renderRow(item, 0, index))}
               </tbody>
             </table>
           )}
