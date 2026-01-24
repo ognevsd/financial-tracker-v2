@@ -8,12 +8,14 @@ import {
 } from "../../../../api/reportSection";
 import Loading from "../../../../components/Loading";
 import { buildSectionHierarchy } from "../../../../lib/utils";
+import { Input } from "../../../../components/ui/input";
 
 export const Route = createLazyFileRoute("/companies/$companyId/$reportId/")({
   component: RouteComponent,
 });
 
 type Year = number;
+type EditValue = number | "";
 
 interface Field {
   id: string;
@@ -28,12 +30,65 @@ interface Section {
   fields: Field[];
 }
 
-interface Data {
+interface Report {
   years: Year[];
   sections: Section[];
 }
 
-const data: Data = {
+function addYearToSections(sections: Section[], year: Year): Section[] {
+  return sections.map((section) => ({
+    ...section,
+    fields: section.fields.map((field) => ({
+      ...field,
+      values: { ...field.values, [year]: field.values[year] ?? "" },
+    })),
+    sections: addYearToSections(section.sections, year),
+  }));
+}
+
+function addYear(report: Report, year: Year): Report {
+  if (report.years.includes(year)) {
+    return report;
+  }
+  const years = [...data.years, year].sort((a, b) => b - a);
+
+  return {
+    ...report,
+    years: years,
+    sections: addYearToSections(data.sections, year),
+  };
+}
+
+function ValueCell({
+  isEditing,
+  value,
+  onChangeValue,
+}: {
+  isEditing: boolean;
+  value: EditValue;
+  onChangeValue: (v: EditValue) => void;
+}) {
+  if (!isEditing) {
+    const n = value === "" ? 0 : value;
+    return <span className="tabular-nums">{formatCurrency(n)}</span>;
+  }
+
+  return (
+    <Input
+      type="number"
+      inputMode="decimal"
+      value={value === "" ? "" : Number(value)}
+      onChange={(e) => {
+        const raw = e.target.value;
+        if (raw === "") return onChangeValue("");
+        const n = Number(raw);
+        if (!Number.isNaN(n)) onChangeValue(n);
+      }}
+    />
+  );
+}
+
+const data: Report = {
   years: [2024, 2023],
   sections: [
     {
@@ -141,6 +196,8 @@ interface RowProps {
   section: Section;
   years: number[];
   level?: number;
+  isEditing: boolean;
+  onChangeCell: (fieldId: string, year: Year, next: EditValue) => void;
 }
 
 function sumSectionByYear(
@@ -172,7 +229,13 @@ function calculateIndent(level: number): string {
   return "pl-6";
 }
 
-function SectionRows({ section, years, level = 0 }: RowProps) {
+function SectionRows({
+  section,
+  years,
+  level = 0,
+  isEditing,
+  onChangeCell,
+}: RowProps) {
   const indent = calculateIndent(level);
   const totals = sumSectionByYear(section, years);
 
@@ -184,7 +247,11 @@ function SectionRows({ section, years, level = 0 }: RowProps) {
           <td className={`py-2 pr-2 ${indent}`}>{f.name}</td>
           {years.map((y) => (
             <td key={y} className="py-2 px-2 text-right tabular-nums">
-              {formatCurrency(f.values[y] ?? 0)}
+              <ValueCell
+                isEditing={isEditing}
+                value={f.values[y] ?? ""}
+                onChangeValue={(next) => onChangeCell(f.id, y, next)}
+              />
             </td>
           ))}
         </tr>
@@ -197,6 +264,8 @@ function SectionRows({ section, years, level = 0 }: RowProps) {
           section={child}
           years={years}
           level={level + 1}
+          isEditing={isEditing}
+          onChangeCell={onChangeCell}
         />
       ))}
 
@@ -222,23 +291,63 @@ function SectionRows({ section, years, level = 0 }: RowProps) {
   );
 }
 
+function updateFieldValueInSections(
+  sections: Section[],
+  fieldId: string,
+  year: Year,
+  nextValue: EditValue,
+): Section[] {
+  return sections.map((s) => ({
+    ...s,
+    fields: s.fields.map((f) =>
+      f.id !== fieldId
+        ? f
+        : {
+            ...f,
+            valuesByYear: { ...f.values, [year]: nextValue },
+          },
+    ),
+    sections: updateFieldValueInSections(s.sections, fieldId, year, nextValue),
+  }));
+}
+
 function RouteComponent() {
   const { companyId, reportId } = Route.useParams();
   const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [saved, setSaved] = useState<Report>(data);
+  const [draft, setDraft] = useState<Report>(data);
+  const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
+
+  const years = draft.years;
+  const sections = useMemo(() => draft.sections, [draft.sections]);
+
+  const onAddYear = (year: Year) => {
+    setDraft((prev) => addYear(prev, year));
+  };
+
+  const onEditToggle = () => {
+    if (isEdit) {
+      setDraft(saved);
+      setIsEdit(false);
+      return;
+    }
+    setIsEdit(true);
+  };
+
+  const onChangeCell = (fieldId: string, year: Year, next: EditValue) => {
+    setDraft((prev) => ({
+      ...prev,
+      sections: updateFieldValueInSections(prev.sections, fieldId, year, next),
+    }));
+  };
 
   const editPath = "/companies/$companyId/$reportId/edit";
 
   return (
     <div>
       <div className="flex justify-end space-x-2">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => {
-            setIsEdit((prev) => !prev);
-          }}
-        >
+        <Button type="button" variant="secondary" onClick={onEditToggle}>
           {isEdit ? "Save" : "Edit Data"}
         </Button>
         <Button
@@ -256,14 +365,18 @@ function RouteComponent() {
           <thead className="bg-gray-200">
             <tr>
               <th className="px-4 py-2">Line item</th>
-              {data.years.map((year) => (
+              {years.map((year) => (
                 <th className="px-4 py-2" key={year}>
                   {year}
                 </th>
               ))}
               {isEdit && (
                 <th className="px-4 py-2">
-                  <Button type="button" size="sm">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => onAddYear(2022)}
+                  >
                     Add Year
                   </Button>
                 </th>
@@ -271,8 +384,14 @@ function RouteComponent() {
             </tr>
           </thead>
           <tbody>
-            {data.sections.map((s) => (
-              <SectionRows key={s.id} section={s} years={data.years} />
+            {sections.map((s) => (
+              <SectionRows
+                key={s.id}
+                section={s}
+                years={data.years}
+                isEditing={isEdit}
+                onChangeCell={onChangeCell}
+              />
             ))}
           </tbody>
         </table>
