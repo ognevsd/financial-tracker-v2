@@ -3,40 +3,14 @@ import { ListTree, Pencil, Trash2 } from "lucide-react";
 import Button from "./ui/button";
 import { getAllReports } from "../api/report";
 import { getAllReportSections } from "../api/reportSection";
-import type { ReportSectionTableData } from "../types/reportSection";
 import { Fragment } from "react/jsx-runtime";
-import { GLYPH } from "../lib/utils";
+import { buildSectionHierarchy, type Hierarchy } from "../lib/utils";
 
 interface OperationTableProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onAddSubsection: (id: string, parentName: string) => void;
 }
-
-interface Hierarchy extends ReportSectionTableData {
-  children: Hierarchy[];
-}
-
-const buildSectionHierarchy = (
-  items: ReportSectionTableData[],
-): Hierarchy[] => {
-  const itemMap: Record<string, Hierarchy> = {};
-  const roots: Hierarchy[] = [];
-
-  items.forEach((item) => {
-    itemMap[item.id] = { ...item, children: [] };
-  });
-
-  items.forEach((item) => {
-    if (item.parentId === "" || item.parentId === null) {
-      roots.push(itemMap[item.id]);
-    } else if (itemMap[item.parentId]) {
-      itemMap[item.parentId].children.push(itemMap[item.id]);
-    }
-  });
-
-  return roots;
-};
 
 const calculatePrefix = (level: number): string => {
   if (level === 0) {
