@@ -124,18 +124,19 @@ export function formatCurrency(n: number, currency: string = "USD") {
 
 export function sumSectionByYear(
   section: Section,
+  flatReport: FlatReport,
   years: Year[],
 ): Record<Year, number> {
   const totals = Object.fromEntries(years.map((y) => [y, 0]));
 
   for (const f of section.fields) {
     for (const y of years) {
-      totals[y] += f.values[y] ?? 0;
+      totals[y] += flatReport[f.id]?.[y] ?? 0
     }
   }
 
   for (const child of section.sections) {
-    const childTotals = sumSectionByYear(child, years);
+    const childTotals = sumSectionByYear(child, flatReport, years);
     for (const y of years) {
       totals[y] += childTotals[y] ?? 0;
     }
@@ -143,3 +144,4 @@ export function sumSectionByYear(
 
   return totals;
 }
+
