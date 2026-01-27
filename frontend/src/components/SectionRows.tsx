@@ -31,7 +31,9 @@ export default function SectionRows({
       {/* Fields */}
       {section.fields.map((field) => (
         <tr key={field.id} className="border-t border-slate-200 bg-white">
-          <td className={`py-2 pr-2 ${indent}`}>{field.name}</td>
+          <td className={`py-2 pr-2 ${indent} sticky left-0 z-10 bg-white`}>
+            {field.name}
+          </td>
           {years.map((year) => (
             <td key={year} className="py-2 px-2 text-right tabular-nums">
               <ValueCell
@@ -65,7 +67,7 @@ export default function SectionRows({
         className={`border-t border-slate-300 ${level === 0 ? "bg-gray-100" : "bg-white"}`}
       >
         <td
-          className={`py-2 pr-2 ${indent} ${level === 0 ? "font-bold" : "font-semibold"}`}
+          className={`py-2 pr-2 ${indent} ${level === 0 ? "font-bold" : "font-semibold"} sticky left-0 z-10 ${level === 0 ? "bg-gray-100" : "bg-white"}`}
         >
           {section.name}
         </td>

@@ -183,16 +183,21 @@ function RouteComponent() {
             navigate({ to: editPath, params: { companyId, reportId } });
           }}
         >
-          Edit Fields
+          Edit Layout
         </Button>
       </div>
-      <div>
-        <table>
+      <div className="max-h-[600px] max-w-full overflow-auto border border-gray-300">
+        <table className="w-full">
           <thead className="bg-gray-200">
             <tr>
-              <th className="px-4 py-2">Line item</th>
+              <th className="px-4 py-2 sticky top-0 left-0 z-30 bg-gray-200">
+                Line item
+              </th>
               {years.map((year, index) => (
-                <th className="px-4 py-2" key={`year-column-${index}`}>
+                <th
+                  className="px-4 py-2 sticky top-0 z-20 bg-gray-200"
+                  key={`year-column-${index}`}
+                >
                   <ValueCell
                     isFinancial={false}
                     isEditing={isEdit}
