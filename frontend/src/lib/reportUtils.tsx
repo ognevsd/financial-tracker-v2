@@ -1,22 +1,4 @@
-export type Year = number;
-
-export interface Field {
-  id: string;
-  name: string;
-  values: Record<Year, number>;
-}
-
-export interface Section {
-  id: string;
-  name: string;
-  sections: Section[];
-  fields: Field[];
-}
-
-export interface Report {
-  years: Year[];
-  sections: Section[];
-}
+import type { FlatReport, Report, Section, Year } from "../types/report";
 
 export const defaultData: Report = {
   years: [2024, 2023],
@@ -145,3 +127,9 @@ export function sumSectionByYear(
   return totals;
 }
 
+export function calculateIndent(level: number): string {
+  if (level === 0) {
+    return "pl-2";
+  }
+  return "pl-6";
+}
