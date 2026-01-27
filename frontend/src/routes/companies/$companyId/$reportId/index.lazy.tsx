@@ -56,6 +56,54 @@ function flattenSections(sections: Section[]): FlatReport {
   return values;
 }
 
+// function updateSections(
+//   sections: Section[],
+//   oldYear: Year,
+//   newYear: Year,
+// ): Section[] {
+//   const newSections = sections.map((section) => {
+//     const newFields = {...section.fields, }
+//   })
+// }
+
+function updateData(data: Report, oldYear: Year, newYear: Year): Report {
+  const newData = structuredClone(data);
+  newData.years = newData.years.map((year) =>
+    year === oldYear ? newYear : year,
+  );
+  console.log(newData);
+  return newData;
+}
+
+function compressYearChange(allChanges: [Year, Year][]): [Year, Year][] {
+  if (allChanges.length === 0) {
+    return [];
+  }
+  const compressedChanges = [];
+
+  let startChange = allChanges[0][0];
+  let endChange = allChanges[0][1];
+  // const prev = endChange;
+
+  for (const change of allChanges.slice(1)) {
+    if (change[0] === endChange) {
+      endChange = change[1];
+    } else {
+      compressedChanges.push([startChange, endChange]);
+      startChange = change[0];
+      endChange = change[1];
+    }
+  }
+  compressedChanges.push([startChange, endChange]);
+  console.log(compressedChanges);
+}
+
+function updateFlatFields(
+  flatFields: FlatReport,
+  oldYear: Year,
+  newYear: Year,
+): FlatReport {}
+
 function RouteComponent() {
   // Routing
   const { companyId, reportId } = Route.useParams();
@@ -65,6 +113,8 @@ function RouteComponent() {
   // State
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [data, setData] = useState<Report>(defaultData);
+  const [years, setYears] = useState<Year[]>(defaultData.years);
+  const [yearChange, setYearChange] = useState<[Year, Year][]>([]);
 
   const initialFlatFields = useMemo(
     () => flattenSections(data.sections),
@@ -72,12 +122,13 @@ function RouteComponent() {
   );
   const [fieldValues, setFieldValues] = useState<FlatReport>(initialFlatFields);
 
-  const years = useMemo(() => data.years, [data.years]);
+  // const years = useMemo(() => data.years, [data.years]);
   const sections = useMemo(() => data.sections, [data.sections]);
 
   const onEditToggle = () => {
     if (isEdit) {
       setIsEdit(false);
+      onSave();
       return;
     }
     setIsEdit(true);
@@ -93,8 +144,26 @@ function RouteComponent() {
     }));
   }
 
-  function onYearChange() {
-    console.log("Woops, year is changing");
+  function onSave() {
+    console.log("Saving data");
+    // const newData = updateData(data, oldYear, newYear);
+    // setData(newData);
+    // updateFlatFields(fieldValues, oldYear, newYear);
+
+    // Now this compressed year changes can be used to update the data. With
+    // the compression, there will be less DB operations needed
+    console.log(compressYearChange(yearChange));
+    setYearChange([]);
+  }
+
+  function onYearChange(oldYear: Year, newYear: Year) {
+    console.log("Woops, year is changing", oldYear, newYear);
+    if (data.years.includes(newYear)) {
+      console.warn("Can't use", newYear, data.years);
+      return;
+    }
+    setYears((prev) => prev.map((year) => (year === oldYear ? newYear : year)));
+    setYearChange((prev) => [...prev, [oldYear, newYear]]);
   }
 
   function onAddYear() {
@@ -122,13 +191,15 @@ function RouteComponent() {
           <thead className="bg-gray-200">
             <tr>
               <th className="px-4 py-2">Line item</th>
-              {years.map((year) => (
-                <th className="px-4 py-2" key={year}>
+              {years.map((year, index) => (
+                <th className="px-4 py-2" key={`year-column-${index}`}>
                   <ValueCell
                     isFinancial={false}
                     isEditing={isEdit}
                     value={year}
-                    onChangeValue={onYearChange}
+                    onChangeValue={(newValue) =>
+                      onYearChange(year, newValue === "" ? 0 : newValue)
+                    }
                   />
                 </th>
               ))}
