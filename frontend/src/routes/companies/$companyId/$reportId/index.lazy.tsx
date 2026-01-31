@@ -1,8 +1,7 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import Button from "../../../../components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { useMemo, useState } from "react";
 import { defaultData } from "../../../../lib/reportUtils";
 import type {
   EditValue,
@@ -12,7 +11,6 @@ import type {
   Year,
 } from "../../../../types/report";
 import SectionRows from "../../../../components/SectionRows";
-import ValueCell from "../../../../components/ValueCell";
 
 export const Route = createLazyFileRoute("/companies/$companyId/$reportId/")({
   component: RouteComponent,
@@ -153,21 +151,6 @@ function RouteComponent() {
     // Now this compressed year changes can be used to update the data. With
     // the compression, there will be less DB operations needed
     console.log(compressYearChange(yearChange));
-    setYearChange([]);
-  }
-
-  function onYearChange(oldYear: Year, newYear: Year) {
-    console.log("Woops, year is changing", oldYear, newYear);
-    if (data.years.includes(newYear)) {
-      console.warn("Can't use", newYear, data.years);
-      return;
-    }
-    setYears((prev) => prev.map((year) => (year === oldYear ? newYear : year)));
-    setYearChange((prev) => [...prev, [oldYear, newYear]]);
-  }
-
-  function onAddYear() {
-    console.log("Hey, to many years :D");
   }
 
   return (
@@ -186,7 +169,7 @@ function RouteComponent() {
           Edit Layout
         </Button>
       </div>
-      <div className="max-h-[600px] max-w-full overflow-auto border border-gray-300">
+      <div className="max-h-[calc(100vh-125px)] max-w-full overflow-auto border border-gray-300">
         <table className="w-full">
           <thead className="bg-gray-200">
             <tr>
@@ -198,23 +181,9 @@ function RouteComponent() {
                   className="px-4 py-2 sticky top-0 z-20 bg-gray-200"
                   key={`year-column-${index}`}
                 >
-                  <ValueCell
-                    isFinancial={false}
-                    isEditing={isEdit}
-                    value={year}
-                    onChangeValue={(newValue) =>
-                      onYearChange(year, newValue === "" ? 0 : newValue)
-                    }
-                  />
+                  {year}
                 </th>
               ))}
-              {isEdit && (
-                <th className="px-4 py-2">
-                  <Button type="button" size="sm" onClick={() => onAddYear()}>
-                    <Plus />
-                  </Button>
-                </th>
-              )}
             </tr>
           </thead>
           <tbody>

@@ -30,3 +30,21 @@ export interface ReportFormData {
 export interface ReportTableData extends ReportFormData {
   id: string;
 }
+
+export interface LayoutFielid {
+  id: string;
+  name: string;
+  orderIndex: number;
+}
+
+export interface LayoutSection {
+  id: string;
+  name: string;
+  orderIndex: number;
+  sections: LayoutSection[];
+  fields: LayoutFielid[];
+}
+
+export interface Layout {
+  sections: LayoutSection[];
+}
