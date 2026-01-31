@@ -1,4 +1,10 @@
-import type { FlatReport, Report, Section, Year } from "../types/report";
+import type {
+  FlatReport,
+  Layout,
+  Report,
+  Section,
+  Year,
+} from "../types/report";
 
 export const defaultData: Report = {
   years: [2024, 2023],
@@ -95,6 +101,88 @@ export const defaultData: Report = {
   ],
 };
 
+export const defaultLayoutData: Layout = {
+  sections: [
+    {
+      id: "totalassets",
+      name: "Total Assets",
+      orderIndex: 1,
+      sections: [
+        {
+          id: "currentassets",
+          name: "Current Assets",
+          orderIndex: 1,
+          sections: [],
+          fields: [
+            {
+              id: "reinvest",
+              name: "Real estate investments",
+              orderIndex: 1,
+            },
+            {
+              id: "loans",
+              name: "Loans receivable and other investments",
+              orderIndex: 2,
+            },
+            {
+              id: "investimentinunconsolidated",
+              name: "Investment in unconsolidated joint ventures",
+              orderIndex: 3,
+            },
+          ],
+        },
+        {
+          id: "noncurrentassets",
+          name: "Non-Current Assets",
+          orderIndex: 2,
+          sections: [],
+          fields: [
+            {
+              id: "cash",
+              name: "Cash and cash equivalents",
+              orderIndex: 1,
+            },
+            {
+              id: "restrinctedcash",
+              name: "Restricted cash",
+              orderIndex: 2,
+            },
+          ],
+        },
+      ],
+      fields: [],
+    },
+    {
+      id: "totallian",
+      name: "Total Liabilities",
+      orderIndex: 2,
+      sections: [
+        {
+          id: "currentlia",
+          name: "Current Liabilities",
+          orderIndex: 1,
+          sections: [],
+          fields: [
+            {
+              id: "secureddebt",
+              name: "Secured debt, net",
+              orderIndex: 1,
+            },
+          ],
+        },
+        {
+          id: "NCL",
+          name: "Non-Current Liabilities",
+          orderIndex: 2,
+          sections: [],
+          fields: [],
+        },
+      ],
+      fields: [],
+    },
+  ],
+};
+
 export function formatCurrency(n: number, currency: string = "USD") {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -113,7 +201,7 @@ export function sumSectionByYear(
 
   for (const f of section.fields) {
     for (const y of years) {
-      totals[y] += flatReport[f.id]?.[y] ?? 0
+      totals[y] += flatReport[f.id]?.[y] ?? 0;
     }
   }
 
