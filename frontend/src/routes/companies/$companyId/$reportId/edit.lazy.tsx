@@ -1,8 +1,4 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { buildSectionHierarchy, type Hierarchy } from "../../../../lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { getAllReportSections } from "../../../../api/reportSection";
-import { Fragment } from "react/jsx-runtime";
 import Button from "../../../../components/ui/button";
 import { defaultLayoutData } from "../../../../lib/reportUtils";
 import type {
@@ -39,14 +35,6 @@ function LayoutSectionRows({
   onNameChange,
   onSwapFields,
 }: LayoutRowProps) {
-  // console.log("flatFields", flatFields);
-  // console.log(section.name, flatFields[section.id]);
-  function moveUp() {
-    console.log("UP");
-  }
-  function moveDown() {
-    console.log("DOWN");
-  }
   return (
     <>
       <h3 className="bg-slate-200">{section.name}</h3>
@@ -154,10 +142,6 @@ function RouteComponent() {
   // State
   const [data, setData] = useState<Layout>(defaultLayoutData);
 
-  // const flatFields = useMemo(
-  //   () => flattenLayout(data.sections),
-  //   [data.sections],
-  // );
   const [flatFields, setFlatFields] = useState(() =>
     flattenLayout(data.sections),
   );
@@ -200,7 +184,6 @@ function RouteComponent() {
       };
       newArr[index1] = item2;
       newArr[index2] = item1;
-      // [newArr[index1], newArr[index2]] = [newArr[index2], newArr[index1]];
       newFields[sectionId] = newArr;
       return newFields;
     });
