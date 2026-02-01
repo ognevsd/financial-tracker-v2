@@ -7,7 +7,7 @@ import type {
   LayoutSection,
 } from "../../../../types/report";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, PlusIcon, Trash2 } from "lucide-react";
 import { Input } from "../../../../components/ui/input";
 
 export const Route = createLazyFileRoute(
@@ -15,8 +15,6 @@ export const Route = createLazyFileRoute(
 )({
   component: RouteComponent,
 });
-
-console.log(defaultLayoutData);
 
 interface LayoutRowProps {
   section: LayoutSection;
@@ -134,6 +132,87 @@ function flattenLayout(
   return flatFields;
 }
 
+function YearModification() {
+  const defaultYears = [
+    "2025",
+    "2024",
+    "2023",
+    "2022",
+    "2021",
+    "2020",
+    "2019",
+    "2018",
+    "2017",
+    "2016",
+    "2015",
+    "2014",
+    "2013",
+    "2012",
+    "2011",
+    "2010",
+  ];
+  const [years, setYears] = useState(defaultYears);
+
+  const onYearAdd = () => {
+    setYears((prev) => [...prev, ""]);
+  };
+
+  const onYearDelete = (index: number) => {
+    setYears((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const onYearChange = (index: number, newValue: string) => {
+    setYears((prev) => {
+      const newYears = [...prev];
+      newYears[index] = newValue;
+      return newYears;
+    });
+  };
+
+  const handleOnBlur = () => {
+    setYears((prev) => [...prev].sort((a, b) => Number(b) - Number(a)));
+  };
+
+  return (
+    <>
+      <h3 className="bg-slate-200">Years</h3>
+      <div className="grid grid-cols-4 gap-2">
+        {years.map((year, index) => {
+          const isDuplicate = years.filter((y) => y === year).length > 1;
+          return (
+            <div
+              key={index}
+              className={`bg-gray-200 rounded flex items-center p-2 max-w-sm min-w-32 gap-2 
+                ${isDuplicate ? "border-2 border-red-500 bg-red-50" : ""}`}
+            >
+              <Input
+                type="text"
+                placeholder="YYYY"
+                maxLength={4}
+                value={year}
+                onBlur={handleOnBlur}
+                pattern="\d{4}"
+                onChange={(e) => onYearChange(index, e.target.value)}
+                onKeyPress={(e) => {
+                  if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+              <Button variant="secondary" onClick={() => onYearDelete(index)}>
+                <Trash2 />
+              </Button>
+            </div>
+          );
+        })}
+        <Button onClick={onYearAdd}>
+          <PlusIcon />
+        </Button>
+      </div>
+    </>
+  );
+}
+
 function RouteComponent() {
   // Navigation
   const navigate = useNavigate();
@@ -207,6 +286,8 @@ function RouteComponent() {
 
   return (
     <div className="space-y-2">
+      <YearModification />
+      <hr />
       {data.sections.map((section) => (
         <LayoutSectionRows
           key={section.id}
