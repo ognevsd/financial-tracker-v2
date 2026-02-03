@@ -25,6 +25,12 @@ func NewSqliteReportFieldStore(db *sql.DB) *SqliteReportFieldStore {
 
 type ReportFieldStore interface {
 	AddReportField(*ReportField) (*ReportField, error)
+	GetReportFields(*ReportFieldFilter) ([]*ReportField, error)
+}
+
+type ReportFieldFilter struct {
+	CompanyId string
+	ReportId  string
 }
 
 func (store *SqliteReportFieldStore) AddReportField(reportField *ReportField) (*ReportField, error) {
@@ -50,4 +56,53 @@ func (store *SqliteReportFieldStore) AddReportField(reportField *ReportField) (*
 	}
 
 	return reportField, nil
+}
+
+func (store *SqliteReportFieldStore) GetReportFields(filter *ReportFieldFilter) ([]*ReportField, error) {
+	query := `
+	SELECT id, original_name, order_index, report_id, section_id, taxonomy_id
+	FROM report_field
+	WHERE 1=1
+	`
+	var args []any
+
+	if filter.CompanyId != "" {
+		query += "AND asset_id = ?"
+		args = append(args, filter.CompanyId)
+	}
+
+	if filter.ReportId != "" {
+		query += "AND report_id = ?"
+		args = append(args, filter.ReportId)
+	}
+
+	var reportFields []*ReportField
+
+	rows, err := store.db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		reportField := &ReportField{}
+		err := rows.Scan(
+			&reportField.Id,
+			&reportField.OriginalName,
+			&reportField.OrderIndex,
+			&reportField.ReportId,
+			&reportField.SectionId,
+			&reportField.TaxonomyId,
+		)
+		if err != nil {
+			return nil, err
+		}
+		reportFields = append(reportFields, reportField)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return reportFields, nil
 }
