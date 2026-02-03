@@ -32,6 +32,7 @@ type ReportSectionStore interface {
 
 type ReportSectionFilter struct {
 	ReportId string
+	ParentId *string
 }
 
 func (store *SqliteReportStore) AddReportSection(reportSection *ReportSection) (*ReportSection, error) {
@@ -68,6 +69,10 @@ func (store *SqliteReportStore) GetAllReportSections(filter ReportSectionFilter)
 	if filter.ReportId != "" {
 		query += "AND report_id = ?"
 		args = append(args, filter.ReportId)
+	}
+	if filter.ParentId != nil {
+		query += "AND parent_id = ?"
+		args = append(args, *filter.ParentId)
 	}
 
 	var reportSections []*ReportSection
