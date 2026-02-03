@@ -35,6 +35,7 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Delete("/api/assettype/{id}", app.AssetTypeHandler.DeleteAssetType)
 
 	r.Get("/api/report", app.ReportHandler.GetAllReports)
+	r.Get("/api/report/layout", app.ReportHandler.GetLayout)
 	r.Get("/api/report/{id}", app.ReportHandler.GetReportById)
 	r.Put("/api/report/{id}", app.ReportHandler.UpdateReport)
 	r.Post("/api/report", app.ReportHandler.AddReprot)
@@ -45,6 +46,8 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Put("/api/report-section/{id}", app.ReportSectionHandler.UpdateReportSection)
 	r.Post("/api/report-section", app.ReportSectionHandler.AddReportSection)
 	r.Delete("/api/report-section/{id}", app.ReportSectionHandler.DeleteReportSection)
+
+	r.Get("/api/report-field", app.ReportFieldHandler.GetAllReportFields)
 
 	r.Get("/api/taxonomy", app.TaxonomyHandler.GetAllTaxonomies)
 	r.Get("/api/taxonomy/{id}", app.TaxonomyHandler.GetTaxonomyById)
