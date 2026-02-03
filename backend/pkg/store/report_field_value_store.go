@@ -21,7 +21,7 @@ func NewSqliteFieldValueStore(db *sql.DB) *SqliteFieldValueStore {
 	return &SqliteFieldValueStore{db: db}
 }
 
-type FieldValueStore interface {
+type ReportFieldValueStore interface {
 	AddFieldValue(*FieldValue) (*FieldValue, error)
 	GetFieldValueByFieldId(fieldId string) ([]*FieldValue, error)
 	UpdateFieldValue(*FieldValue) error
