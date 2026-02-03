@@ -11,11 +11,11 @@ import (
 )
 
 type FieldValueHandler struct {
-	store  store.FieldValueStore
+	store  store.ReportFieldValueStore
 	logger *slog.Logger
 }
 
-func NewFieldValueHandler(store store.FieldValueStore, logger *slog.Logger) *FieldValueHandler {
+func NewFieldValueHandler(store store.ReportFieldValueStore, logger *slog.Logger) *FieldValueHandler {
 	return &FieldValueHandler{store: store, logger: logger}
 }
 
