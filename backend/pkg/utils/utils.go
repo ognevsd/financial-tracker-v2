@@ -35,3 +35,7 @@ func ReadIdParam(r *http.Request) (string, error) {
 func ErrorPayload(errorMessage string) Envelope {
 	return Envelope{"error": errorMessage}
 }
+
+func StringPtr(s string) *string {
+	return &s
+}
