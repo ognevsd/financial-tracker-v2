@@ -5,19 +5,28 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 
+	"github.com/ognevsd/financial-tracker-v2/pkg/services"
 	"github.com/ognevsd/financial-tracker-v2/pkg/store"
 	"github.com/ognevsd/financial-tracker-v2/pkg/utils"
 )
 
 type ReportHandler struct {
-	logger *log.Logger
-	store  store.ReportStore
+	logger        *log.Logger
+	newLogger     *slog.Logger
+	store         store.ReportStore
+	reportService services.ReportService
 }
 
-func NewReportHandler(store store.ReportStore, logger *log.Logger) *ReportHandler {
-	return &ReportHandler{store: store, logger: logger}
+func NewReportHandler(
+	store store.ReportStore,
+	reportService services.ReportService,
+	logger *log.Logger,
+	newLogger *slog.Logger,
+) *ReportHandler {
+	return &ReportHandler{store: store, reportService: reportService, logger: logger, newLogger: newLogger}
 }
 
 func (handler *ReportHandler) AddReprot(w http.ResponseWriter, r *http.Request) {
@@ -134,4 +143,9 @@ func (handler *ReportHandler) DeleteReport(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (handler *ReportHandler) GetLayout(w http.ResponseWriter, r *http.Request) {
+	layout, _ := handler.reportService.GetLayout()
+	handler.newLogger.Info("TEST", "layout", layout)
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/ognevsd/financial-tracker-v2/migrations"
 	"github.com/ognevsd/financial-tracker-v2/pkg/api"
+	"github.com/ognevsd/financial-tracker-v2/pkg/services"
 	"github.com/ognevsd/financial-tracker-v2/pkg/store"
 )
 
@@ -26,6 +27,7 @@ type Application struct {
 	AssetTypeHandler     *api.AssetTypeHandler
 	ReportHandler        *api.ReportHandler
 	ReportSectionHandler *api.ReportSectionHandler
+	ReportFieldHandler   *api.ReportFieldHandler
 	TaxonomyHandler      *api.TaxonomyHandler
 	FieldValueHandler    *api.FieldValueHandler
 	AssetHandler         *api.AssetHandler
@@ -75,17 +77,22 @@ func New() (*Application, error) {
 	transactionStore := store.NewSqliteTransactionStore(sqliteDB)
 	reportStore := store.NewSqliteReportStore(sqliteDB)
 	reportSectionStore := store.NewSqliteReportSectionStore(sqliteDB)
+	reportFieldStore := store.NewSqliteReportFieldStore(sqliteDB)
 	taxonomyStore := store.NewTaxonomyStore(sqliteDB)
 	fieldValueStore := store.NewSqliteFieldValueStore(sqliteDB)
 	assetStore := store.NewSqliteAssetStore(sqliteDB)
+
+	// services will go here
+	reportService := services.NewReportService(newLogger, reportStore, reportSectionStore, reportFieldStore, fieldValueStore)
 
 	// handlers will go here
 	currencyHandler := api.NewCurrencyHandler(currencyStore, logger)
 	operationHandler := api.NewOperationHandler(operationStore, logger)
 	assetTypeHandler := api.NewAssetTypeHandler(assetTypeStore, logger)
 	transactionHandler := api.NewTransactionHandler(transactionStore, logger, newLogger)
-	reportHandler := api.NewReportHandler(reportStore, logger)
+	reportHandler := api.NewReportHandler(reportStore, reportService, logger, newLogger)
 	reportSectionHandler := api.NewReportSectionHandler(reportSectionStore, logger)
+	reportFieldHandler := api.NewReportFieldHandler(reportFieldStore, newLogger)
 	taxonomyHandler := api.NewTaxonomyHandler(taxonomyStore, logger)
 	fieldValueHandler := api.NewFieldValueHandler(fieldValueStore, newLogger)
 	assetHandler := api.NewAssetHandler(assetStore, newLogger)
@@ -99,6 +106,7 @@ func New() (*Application, error) {
 		AssetTypeHandler:     assetTypeHandler,
 		ReportHandler:        reportHandler,
 		ReportSectionHandler: reportSectionHandler,
+		ReportFieldHandler:   reportFieldHandler,
 		TaxonomyHandler:      taxonomyHandler,
 		FieldValueHandler:    fieldValueHandler,
 		AssetHandler:         assetHandler,
