@@ -75,6 +75,8 @@ func (store *SqliteReportStore) GetAllReportSections(filter ReportSectionFilter)
 		args = append(args, *filter.ParentId)
 	}
 
+	query += "ORDER BY order_index ASC"
+
 	var reportSections []*ReportSection
 
 	rows, err := store.db.Query(query, args...)

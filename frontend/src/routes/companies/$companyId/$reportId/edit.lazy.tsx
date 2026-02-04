@@ -7,111 +7,18 @@ import type {
   LayoutSection,
 } from "../../../../types/report";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, PlusIcon, Trash2 } from "lucide-react";
+import { PlusIcon, Trash2 } from "lucide-react";
 import { Input } from "../../../../components/ui/input";
+import { LayoutSectionRows } from "../../../../components/LayoutSectionRows";
+import { useQuery } from "@tanstack/react-query";
+import { getLayout } from "../../../../api/layout";
+import Loading from "../../../../components/Loading";
 
 export const Route = createLazyFileRoute(
   "/companies/$companyId/$reportId/edit",
 )({
   component: RouteComponent,
 });
-
-interface LayoutRowProps {
-  section: LayoutSection;
-  flatFields: Record<string, Array<LayoutField>>;
-  onAddField: (sectionId: string) => void;
-  onDeleteField: (sectionId: string, fieldId: string) => void;
-  onNameChange: (sectionId: string, fieldId: string, newName: string) => void;
-  onSwapFields: (sectionId: string, index1: number, index2: number) => void;
-}
-
-function LayoutSectionRows({
-  section,
-  flatFields,
-  onAddField,
-  onDeleteField,
-  onNameChange,
-  onSwapFields,
-}: LayoutRowProps) {
-  return (
-    <>
-      <h3 className="bg-slate-200">{section.name}</h3>
-      {/* Fields */}
-      <table>
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="px-2 py-2">Order Index</th>
-            <th className="px-2 py-2">Name</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {flatFields[section.id].map((field, index, arr) => (
-            <tr key={field.id}>
-              <td className="px-2 py-2">{field.orderIndex}</td>
-              <td className="px-2 py-2">
-                <Input
-                  type="text"
-                  id={field.id}
-                  value={field.name}
-                  onChange={(e) =>
-                    onNameChange(section.id, field.id, e.target.value)
-                  }
-                />
-              </td>
-              <td>
-                <div className="space-x-0.5">
-                  <Button
-                    variant="secondary"
-                    disabled={index === 0}
-                    onClick={() => onSwapFields(section.id, index, index - 1)}
-                  >
-                    <ArrowUp />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    disabled={index === arr.length - 1}
-                    onClick={() => onSwapFields(section.id, index, index + 1)}
-                  >
-                    <ArrowDown />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => onDeleteField(section.id, field.id)}
-                  >
-                    <Trash2 />
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Button variant="secondary" onClick={() => onAddField(section.id)}>
-        Add Field
-      </Button>
-
-      {/* Children */}
-      {section.sections.map((section) => (
-        <LayoutSectionRows
-          key={section.id}
-          section={section}
-          flatFields={flatFields}
-          onAddField={(sectionId: string) => onAddField(sectionId)}
-          onDeleteField={(sectionId: string, fieldId: string) =>
-            onDeleteField(sectionId, fieldId)
-          }
-          onNameChange={(sectionId: string, fieldId: string, newName: string) =>
-            onNameChange(sectionId, fieldId, newName)
-          }
-          onSwapFields={(sectionId: string, index1: number, index2: number) =>
-            onSwapFields(sectionId, index1, index2)
-          }
-        />
-      ))}
-    </>
-  );
-}
 
 function flattenLayout(
   sections: LayoutSection[],
@@ -219,11 +126,32 @@ function RouteComponent() {
   const { companyId, reportId } = Route.useParams();
 
   // State
-  const [data, setData] = useState<Layout>(defaultLayoutData);
+  // const [data, setData] = useState<Layout>(defaultLayoutData);
+  const [flatFields, setFlatFields] = useState<
+    Record<string, Array<LayoutField>>
+  >({});
 
-  const [flatFields, setFlatFields] = useState(() =>
-    flattenLayout(data.sections),
-  );
+  const { data, isLoading } = useQuery({
+    queryFn: () => getLayout(reportId, companyId),
+    queryKey: [`${companyId}-${reportId}-layout`],
+    staleTime: 120_000,
+  });
+  console.log("Data from DB", data);
+
+  // const [flatFields, setFlatFields] = useState(() =>
+  //   flattenLayout(data?.layout ?? []),
+  // );
+
+  useEffect(() => {
+    if (data?.layout) {
+      setFlatFields(flattenLayout(data.layout));
+    }
+  }, [data?.layout]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
   const addField = (sectionId: string) => {
     setFlatFields((prev) => {
       // id is needed to provide unique key for rendering, in backend it will be
@@ -279,16 +207,11 @@ function RouteComponent() {
     });
   };
 
-  // // Re-sync when source data changes
-  // useEffect(() => {
-  //   setFlatFields(flattenLayout(data.sections));
-  // }, [data.sections]);
-
   return (
     <div className="space-y-2">
       <YearModification />
       <hr />
-      {data.sections.map((section) => (
+      {data?.layout.map((section) => (
         <LayoutSectionRows
           key={section.id}
           section={section}

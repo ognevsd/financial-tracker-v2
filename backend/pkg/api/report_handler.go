@@ -146,6 +146,25 @@ func (handler *ReportHandler) DeleteReport(w http.ResponseWriter, r *http.Reques
 }
 
 func (handler *ReportHandler) GetLayout(w http.ResponseWriter, r *http.Request) {
-	layout, _ := handler.reportService.GetLayout()
-	handler.newLogger.Info("TEST", "layout", layout)
+	reportId := r.URL.Query().Get("reportId")
+	if reportId == "" {
+		handler.newLogger.Error("Missing report id param")
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("Missing reportId param"))
+		return
+	}
+	companyId := r.URL.Query().Get("companyId")
+	if companyId == "" {
+		handler.newLogger.Error("Missing companyId param")
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("Missing companyId param"))
+		return
+	}
+	layout, err := handler.reportService.GetLayout(reportId, companyId)
+	if err != nil {
+		handler.newLogger.Error("Error occured while building layout", "error", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error occured while building layout: %v", err)))
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"layout": layout})
+
 }

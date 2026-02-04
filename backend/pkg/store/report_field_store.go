@@ -31,6 +31,7 @@ type ReportFieldStore interface {
 type ReportFieldFilter struct {
 	CompanyId string
 	ReportId  string
+	SectionId *string
 }
 
 func (store *SqliteReportFieldStore) AddReportField(reportField *ReportField) (*ReportField, error) {
@@ -75,6 +76,13 @@ func (store *SqliteReportFieldStore) GetReportFields(filter *ReportFieldFilter) 
 		query += "AND report_id = ?"
 		args = append(args, filter.ReportId)
 	}
+
+	if filter.SectionId != nil {
+		query += "AND section_id = ?"
+		args = append(args, *filter.SectionId)
+	}
+
+	query += "ORDER BY order_index ASC"
 
 	var reportFields []*ReportField
 

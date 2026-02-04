@@ -46,5 +46,5 @@ export interface LayoutSection {
 }
 
 export interface Layout {
-  sections: LayoutSection[];
+  layout: LayoutSection[];
 }

@@ -17,7 +17,7 @@ type reportService struct {
 }
 
 type ReportService interface {
-	GetLayout() (*models.Layout, error)
+	GetLayout(reportId string, companyId string) (models.Layout, error)
 }
 
 func NewReportService(
@@ -36,16 +36,79 @@ func NewReportService(
 	}
 }
 
-func (s *reportService) GetLayout() (*models.Layout, error) {
-	layout := &models.Layout{}
+func (s *reportService) getSectionDetails(companyId string, reportId string, parentId string) (*models.LayoutSection, error) {
+	layoutSection := &models.LayoutSection{}
+	layoutFields := []models.LayoutField{}
+	layoutSections := []models.LayoutSection{}
 
 	sectionsFilter := store.ReportSectionFilter{
-		ReportId: "7842486a-1679-426f-b31e-d575a8aaed51",
+		ReportId: reportId,
+		ParentId: &parentId,
+	}
+	fieldFilter := store.ReportFieldFilter{
+		CompanyId: companyId,
+		ReportId:  reportId,
+		SectionId: &parentId,
+	}
+	fields, err := s.reportFieldStore.GetReportFields(&fieldFilter)
+	if err != nil {
+		return nil, err
+	}
+	for _, field := range fields {
+		layoutFields = append(layoutFields, models.LayoutField{
+			ID:         field.Id,
+			Name:       field.OriginalName,
+			OrderIndex: int64(field.OrderIndex),
+		})
+	}
+	layoutSection.Fields = layoutFields
+
+	sections, err := s.reportSectionStore.GetAllReportSections(sectionsFilter)
+	// s.logger.Info("Sections", "parentId", parentId, "sections", sections)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, section := range sections {
+		tmp, err := s.getSectionDetails(companyId, reportId, section.ID)
+		if err != nil {
+			return nil, err
+		}
+		layoutSections = append(layoutSections, models.LayoutSection{
+			ID:         section.ID,
+			Name:       section.Name,
+			OrderIndex: int64(section.OrderIndex),
+			Fields:     tmp.Fields,
+			Sections:   tmp.Sections,
+		})
+
+	}
+	// s.logger.Info("Sections", "parentId", parentId, "layoutSections", layoutSections)
+	layoutSection.Sections = layoutSections
+
+	// s.logger.Info("HERE", "layout section", layoutSection)
+	return layoutSection, nil
+}
+
+func (s *reportService) GetLayout(reportId string, companyId string) (models.Layout, error) {
+	layout := models.Layout{}
+
+	sectionsFilter := store.ReportSectionFilter{
+		ReportId: reportId,
 		ParentId: utils.StringPtr(""),
 	}
 
 	sections, _ := s.reportSectionStore.GetAllReportSections(sectionsFilter)
-	s.logger.Info("Sections", "sections", sections)
+	for _, section := range sections {
+		sectionDetails, _ := s.getSectionDetails(companyId, reportId, section.ID)
+		layout = append(layout, models.LayoutSection{
+			ID:         section.ID,
+			Name:       section.Name,
+			OrderIndex: int64(section.OrderIndex),
+			Sections:   sectionDetails.Sections,
+			Fields:     sectionDetails.Fields,
+		})
+	}
 
 	return layout, nil
 }

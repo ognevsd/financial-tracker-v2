@@ -34,6 +34,4 @@ type LayoutSection struct {
 	Fields     []LayoutField   `json:"fields"`
 }
 
-type Layout struct {
-	Sections []LayoutSection `json:"sections"`
-}
+type Layout []LayoutSection
