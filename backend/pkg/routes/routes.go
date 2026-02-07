@@ -41,11 +41,17 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Post("/api/report", app.ReportHandler.AddReprot)
 	r.Delete("/api/report/{id}", app.ReportHandler.DeleteReport)
 
-	r.Get("/api/report-section", app.ReportSectionHandler.GetAllReportSections)
-	r.Get("/api/report-section/{id}", app.ReportSectionHandler.GetReportSectionById)
-	r.Put("/api/report-section/{id}", app.ReportSectionHandler.UpdateReportSection)
-	r.Post("/api/report-section", app.ReportSectionHandler.AddReportSection)
-	r.Delete("/api/report-section/{id}", app.ReportSectionHandler.DeleteReportSection)
+	r.Route("/api/report-section", func(r chi.Router) {
+		r.Get("/", app.ReportSectionHandler.GetAllReportSections)
+		r.Post("/", app.ReportSectionHandler.AddReportSection)
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", app.ReportSectionHandler.GetReportSectionById)
+			r.Put("/", app.ReportSectionHandler.UpdateReportSection)
+			r.Delete("/", app.ReportSectionHandler.DeleteReportSection)
+		})
+
+	})
 
 	r.Get("/api/report-field", app.ReportFieldHandler.GetAllReportFields)
 
