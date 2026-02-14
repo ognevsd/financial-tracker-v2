@@ -34,26 +34,38 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Post("/api/assettype", app.AssetTypeHandler.AddAssetType)
 	r.Delete("/api/assettype/{id}", app.AssetTypeHandler.DeleteAssetType)
 
-	r.Get("/api/report", app.ReportHandler.GetAllReports)
-	r.Get("/api/report/layout", app.ReportHandler.GetLayout)
-	r.Get("/api/report/{id}", app.ReportHandler.GetReportById)
-	r.Put("/api/report/{id}", app.ReportHandler.UpdateReport)
-	r.Post("/api/report", app.ReportHandler.AddReprot)
-	r.Delete("/api/report/{id}", app.ReportHandler.DeleteReport)
+	r.Route("/api", func(r chi.Router) {
 
-	r.Route("/api/report-section", func(r chi.Router) {
-		r.Get("/", app.ReportSectionHandler.GetAllReportSections)
-		r.Post("/", app.ReportSectionHandler.AddReportSection)
+		r.Route("/report", func(r chi.Router) {
+			r.Get("/", app.ReportHandler.GetAllReports)
+			r.Post("/", app.ReportHandler.AddReprot)
 
-		r.Route("/{id}", func(r chi.Router) {
-			r.Get("/", app.ReportSectionHandler.GetReportSectionById)
-			r.Put("/", app.ReportSectionHandler.UpdateReportSection)
-			r.Delete("/", app.ReportSectionHandler.DeleteReportSection)
+			r.Route("/{id}", func(r chi.Router) {
+				r.Get("/", app.ReportHandler.GetReportById)
+				r.Put("/", app.ReportHandler.UpdateReport)
+				r.Delete("/", app.ReportHandler.DeleteReport)
+			})
+
+			r.Get("/layout", app.ReportHandler.GetLayout)
 		})
 
-	})
+		r.Route("/report-section", func(r chi.Router) {
+			r.Get("/", app.ReportSectionHandler.GetAllReportSections)
+			r.Post("/", app.ReportSectionHandler.AddReportSection)
 
-	r.Get("/api/report-field", app.ReportFieldHandler.GetAllReportFields)
+			r.Route("/{id}", func(r chi.Router) {
+				r.Get("/", app.ReportSectionHandler.GetReportSectionById)
+				r.Put("/", app.ReportSectionHandler.UpdateReportSection)
+				r.Delete("/", app.ReportSectionHandler.DeleteReportSection)
+			})
+		})
+
+		r.Route("/report-field", func(r chi.Router) {
+			r.Get("/", app.ReportFieldHandler.GetAllReportFields)
+			r.Put("/", app.ReportFieldHandler.UpsertField)
+
+		})
+	})
 
 	r.Get("/api/taxonomy", app.TaxonomyHandler.GetAllTaxonomies)
 	r.Get("/api/taxonomy/{id}", app.TaxonomyHandler.GetTaxonomyById)

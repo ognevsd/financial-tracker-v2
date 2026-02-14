@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -32,4 +33,17 @@ func (handler *ReportFieldHandler) GetAllReportFields(w http.ResponseWriter, r *
 	}
 
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"reportField": reportFields})
+}
+
+func (handler *ReportFieldHandler) UpsertField(w http.ResponseWriter, r *http.Request) {
+	var fieldDetails struct {
+		CompanyId  *string `json:"companyId"`
+		SectionId  *string `json:"sectionId"`
+		FieldId    *string `json:"fieldId"`
+		OrderIndex *int    `json:"orderIndex"`
+		Name       *string `json:"name"`
+		TaxonomyId *string `json:"taxonomyId"`
+	}
+	json.NewDecoder(r.Body).Decode(&fieldDetails)
+	handler.logger.Info("Field details", "details", fieldDetails)
 }

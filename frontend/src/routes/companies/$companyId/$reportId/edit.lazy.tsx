@@ -10,9 +10,10 @@ import { useEffect, useMemo, useState } from "react";
 import { PlusIcon, Trash2 } from "lucide-react";
 import { Input } from "../../../../components/ui/input";
 import { LayoutSectionRows } from "../../../../components/LayoutSectionRows";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getLayout } from "../../../../api/layout";
 import Loading from "../../../../components/Loading";
+import { upsertField, type UpsertData } from "../../../../api/reportLayout";
 
 export const Route = createLazyFileRoute(
   "/companies/$companyId/$reportId/edit",
@@ -133,10 +134,9 @@ function RouteComponent() {
 
   const { data, isLoading } = useQuery({
     queryFn: () => getLayout(reportId, companyId),
-    queryKey: [`${companyId}-${reportId}-layout`],
+    queryKey: [companyId, reportId, "layout"],
     staleTime: 120_000,
   });
-  console.log("Data from DB", data);
 
   // const [flatFields, setFlatFields] = useState(() =>
   //   flattenLayout(data?.layout ?? []),
@@ -148,11 +148,16 @@ function RouteComponent() {
     }
   }, [data?.layout]);
 
+  const upsertFieldMutation = useMutation({
+    mutationFn: (data: UpsertData) => upsertField(data),
+  });
+
   if (isLoading) {
     return <Loading />;
   }
 
   const addField = (sectionId: string) => {
+    console.log(sectionId);
     setFlatFields((prev) => {
       // id is needed to provide unique key for rendering, in backend it will be
       // replaced with proper id
@@ -165,6 +170,23 @@ function RouteComponent() {
           { id: id, name: "", orderIndex: orderIndex },
         ],
       };
+    });
+  };
+
+  const handleFieldBlur = (
+    sectionId: string,
+    fieldId: string,
+    value: string,
+  ) => {
+    // if (value === "") return; // NOTE: Do nothing if field is empty string
+    //
+    console.log("Field on blur", companyId, sectionId, fieldId, value);
+    upsertFieldMutation.mutate({
+      companyId: companyId,
+      sectionId: sectionId,
+      fieldId: fieldId,
+      orderIndex: 1,
+      name: value,
     });
   };
 
@@ -225,6 +247,9 @@ function RouteComponent() {
           }
           onSwapFields={(sectionId: string, index1: number, index2: number) =>
             swapFields(sectionId, index1, index2)
+          }
+          onFieldBlur={(sectionId: string, fieldId: string, value: string) =>
+            handleFieldBlur(sectionId, fieldId, value)
           }
         />
       ))}

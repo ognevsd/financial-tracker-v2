@@ -10,6 +10,7 @@ interface LayoutRowProps {
   onDeleteField: (sectionId: string, fieldId: string) => void;
   onNameChange: (sectionId: string, fieldId: string, newName: string) => void;
   onSwapFields: (sectionId: string, index1: number, index2: number) => void;
+  onFieldBlur: (sectionId: string, fieldId: string, value: string) => void;
 }
 
 export function LayoutSectionRows({
@@ -19,6 +20,7 @@ export function LayoutSectionRows({
   onDeleteField,
   onNameChange,
   onSwapFields,
+  onFieldBlur,
 }: LayoutRowProps) {
   return (
     <>
@@ -43,6 +45,9 @@ export function LayoutSectionRows({
                   value={field.name}
                   onChange={(e) =>
                     onNameChange(section.id, field.id, e.target.value)
+                  }
+                  onBlur={(e) =>
+                    onFieldBlur(section.id, field.id, e.target.value)
                   }
                 />
               </td>
@@ -93,6 +98,9 @@ export function LayoutSectionRows({
           }
           onSwapFields={(sectionId: string, index1: number, index2: number) =>
             onSwapFields(sectionId, index1, index2)
+          }
+          onFieldBlur={(sectionId: string, fieldId: string, value: string) =>
+            onFieldBlur(sectionId, fieldId, value)
           }
         />
       ))}
