@@ -46,4 +46,26 @@ func (handler *ReportFieldHandler) UpsertField(w http.ResponseWriter, r *http.Re
 	}
 	json.NewDecoder(r.Body).Decode(&fieldDetails)
 	handler.logger.Info("Field details", "details", fieldDetails)
+
+	exists, err := handler.store.FieldExists(*fieldDetails.FieldId)
+	if err != nil {
+		handler.logger.Error("Error checking if field exists", "error", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error checking if field exists", err)))
+		return
+	}
+
+	if exists {
+		// TODO: Update field
+	} else {
+		handler.store.AddReportField(&store.ReportField{
+			Id:           *fieldDetails.FieldId,
+			OriginalName: *fieldDetails.Name,
+			OrderIndex:   *fieldDetails.OrderIndex,
+			SectionId:    *fieldDetails.SectionId,
+			AssetId:      *fieldDetails.CompanyId,
+			TaxonomyId:   fieldDetails.TaxonomyId,
+		})
+	}
+
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{})
 }

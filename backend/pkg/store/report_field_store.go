@@ -26,6 +26,7 @@ func NewSqliteReportFieldStore(db *sql.DB) *SqliteReportFieldStore {
 type ReportFieldStore interface {
 	AddReportField(*ReportField) (*ReportField, error)
 	GetReportFields(*ReportFieldFilter) ([]*ReportField, error)
+	FieldExists(id string) (bool, error)
 }
 
 type ReportFieldFilter struct {
@@ -57,6 +58,19 @@ func (store *SqliteReportFieldStore) AddReportField(reportField *ReportField) (*
 	}
 
 	return reportField, nil
+}
+
+func (store *SqliteReportFieldStore) FieldExists(id string) (bool, error) {
+	var exists bool
+	query := `
+	SELECT EXISTS(SELECT 1 FROM report_field WHERE id = ?) AS field_exists;
+	`
+	err := store.db.QueryRow(query, id).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("Error checking if field exists: %w", err)
+	}
+
+	return exists, nil
 }
 
 func (store *SqliteReportFieldStore) GetReportFields(filter *ReportFieldFilter) ([]*ReportField, error) {
