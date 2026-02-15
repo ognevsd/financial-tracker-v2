@@ -177,6 +177,7 @@ function RouteComponent() {
     sectionId: string,
     fieldId: string,
     value: string,
+    orderIndex: number,
   ) => {
     // if (value === "") return; // NOTE: Do nothing if field is empty string
     //
@@ -185,7 +186,7 @@ function RouteComponent() {
       companyId: companyId,
       sectionId: sectionId,
       fieldId: fieldId,
-      orderIndex: 1,
+      orderIndex: orderIndex,
       name: value,
     });
   };
@@ -248,9 +249,12 @@ function RouteComponent() {
           onSwapFields={(sectionId: string, index1: number, index2: number) =>
             swapFields(sectionId, index1, index2)
           }
-          onFieldBlur={(sectionId: string, fieldId: string, value: string) =>
-            handleFieldBlur(sectionId, fieldId, value)
-          }
+          onFieldBlur={(
+            sectionId: string,
+            fieldId: string,
+            value: string,
+            orderIndex: number,
+          ) => handleFieldBlur(sectionId, fieldId, value, orderIndex)}
         />
       ))}
     </div>
