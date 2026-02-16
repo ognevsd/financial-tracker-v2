@@ -19,6 +19,18 @@ func Open() (*sql.DB, error) {
 
 	fmt.Println("Connected to the database...")
 
+	_, err = db.Exec("PRAGMA foreign_keys = ON")
+	if err != nil {
+		return nil, fmt.Errorf("db: enabling foreign keys: %w", err)
+	}
+
+	var fkEnabled int
+	err = db.QueryRow("PRAGMA foreign_keys").Scan(&fkEnabled)
+	if err != nil {
+		return nil, fmt.Errorf("db: pragma %w", err)
+	}
+	fmt.Printf("db: foreign keys enabled: %d\n", fkEnabled)
+
 	return db, nil
 }
 
