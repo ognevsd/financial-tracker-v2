@@ -64,6 +64,11 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 			r.Get("/", app.ReportFieldHandler.GetAllReportFields)
 			r.Put("/", app.ReportFieldHandler.UpsertField)
 
+			r.Post("/swap", app.ReportFieldHandler.SwapFields)
+
+			r.Route("/{id}", func(r chi.Router) {
+				r.Delete("/", app.ReportFieldHandler.DeleteField)
+			})
 		})
 	})
 

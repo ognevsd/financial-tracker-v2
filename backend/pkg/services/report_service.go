@@ -64,7 +64,6 @@ func (s *reportService) getSectionDetails(companyId string, reportId string, par
 	layoutSection.Fields = layoutFields
 
 	sections, err := s.reportSectionStore.GetAllReportSections(sectionsFilter)
-	// s.logger.Info("Sections", "parentId", parentId, "sections", sections)
 	if err != nil {
 		return nil, err
 	}

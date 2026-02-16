@@ -10,10 +10,16 @@ import { useEffect, useMemo, useState } from "react";
 import { PlusIcon, Trash2 } from "lucide-react";
 import { Input } from "../../../../components/ui/input";
 import { LayoutSectionRows } from "../../../../components/LayoutSectionRows";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLayout } from "../../../../api/layout";
 import Loading from "../../../../components/Loading";
-import { upsertField, type UpsertData } from "../../../../api/reportLayout";
+import {
+  deleteField,
+  swapFields,
+  upsertField,
+  type SwapFieldsData,
+  type UpsertData,
+} from "../../../../api/reportLayout";
 
 export const Route = createLazyFileRoute(
   "/companies/$companyId/$reportId/edit",
@@ -132,6 +138,7 @@ function RouteComponent() {
     Record<string, Array<LayoutField>>
   >({});
 
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryFn: () => getLayout(reportId, companyId),
     queryKey: [companyId, reportId, "layout"],
@@ -150,6 +157,27 @@ function RouteComponent() {
 
   const upsertFieldMutation = useMutation({
     mutationFn: (data: UpsertData) => upsertField(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [companyId, reportId, "layout"],
+      });
+    },
+  });
+  const deleteFieldMutation = useMutation({
+    mutationFn: (id: string) => deleteField(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [companyId, reportId, "layout"],
+      });
+    },
+  });
+  const swapFieldsMutation = useMutation({
+    mutationFn: (data: SwapFieldsData) => swapFields(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [companyId, reportId, "layout"],
+      });
+    },
   });
 
   if (isLoading) {
@@ -157,7 +185,6 @@ function RouteComponent() {
   }
 
   const addField = (sectionId: string) => {
-    console.log(sectionId);
     setFlatFields((prev) => {
       // id is needed to provide unique key for rendering, in backend it will be
       // replaced with proper id
@@ -181,9 +208,9 @@ function RouteComponent() {
   ) => {
     // if (value === "") return; // NOTE: Do nothing if field is empty string
     //
-    console.log("Field on blur", companyId, sectionId, fieldId, value);
     upsertFieldMutation.mutate({
       companyId: companyId,
+      reportId: reportId,
       sectionId: sectionId,
       fieldId: fieldId,
       orderIndex: orderIndex,
@@ -191,7 +218,8 @@ function RouteComponent() {
     });
   };
 
-  const deleteField = (sectionId: string, fieldId: string) => {
+  const handleDeleteField = (sectionId: string, fieldId: string) => {
+    deleteFieldMutation.mutate(fieldId);
     setFlatFields((prev) => {
       return {
         ...prev,
@@ -200,7 +228,27 @@ function RouteComponent() {
     });
   };
 
-  const swapFields = (sectionId: string, index1: number, index2: number) => {
+  const handleSwapFields = (
+    sectionId: string,
+    index1: number,
+    index2: number,
+  ) => {
+    const fieldOne = flatFields[sectionId].find(
+      (item) => item.orderIndex == index1 + 1,
+    );
+    const fieldTwo = flatFields[sectionId].find(
+      (item) => item.orderIndex == index2 + 1,
+    );
+    if (!fieldOne || !fieldTwo) {
+      console.error("Cannot swap missing fields");
+      return;
+    }
+    swapFieldsMutation.mutate({
+      fieldIdOne: fieldOne.id,
+      fieldIdTwo: fieldTwo.id,
+      orderIndexOne: index1 + 1,
+      orderIndexTwo: index2 + 1,
+    });
     setFlatFields((prev) => {
       const newFields = { ...prev };
       const newArr = [...newFields[sectionId]];
@@ -241,13 +289,13 @@ function RouteComponent() {
           flatFields={flatFields}
           onAddField={(sectionId: string) => addField(sectionId)}
           onDeleteField={(sectionId: string, fieldId: string) =>
-            deleteField(sectionId, fieldId)
+            handleDeleteField(sectionId, fieldId)
           }
           onNameChange={(sectionId: string, fieldId: string, newName: string) =>
             changeName(sectionId, fieldId, newName)
           }
           onSwapFields={(sectionId: string, index1: number, index2: number) =>
-            swapFields(sectionId, index1, index2)
+            handleSwapFields(sectionId, index1, index2)
           }
           onFieldBlur={(
             sectionId: string,

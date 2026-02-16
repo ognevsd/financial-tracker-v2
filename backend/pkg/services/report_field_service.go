@@ -1,0 +1,104 @@
+package services
+
+import (
+	"fmt"
+	"log/slog"
+
+	"github.com/ognevsd/financial-tracker-v2/pkg/store"
+)
+
+type reportFieldService struct {
+	logger *slog.Logger
+	store  store.ReportFieldStore
+}
+
+func NewReportFieldService(logger *slog.Logger, store store.ReportFieldStore) *reportFieldService {
+	return &reportFieldService{logger: logger, store: store}
+}
+
+type ReportFieldService interface {
+	UpsertField(input *UpsertFieldInput) error
+	DeleteField(id string) error
+	SwapFields(fieldIdOne string, orderIndexOne int, fieldIdTwo string, orderIndexTwo int) error
+}
+
+type UpsertFieldInput struct {
+	CompanyId  string  `json:"companyId"`
+	ReportId   string  `json:"reportId"`
+	SectionId  string  `json:"sectionId"`
+	FieldId    string  `json:"fieldId"`
+	OrderIndex int     `json:"orderIndex"`
+	Name       string  `json:"name"`
+	TaxonomyId *string `json:"taxonomyId"`
+}
+
+func (s *reportFieldService) UpsertField(input *UpsertFieldInput) error {
+	s.logger.Info("Upserting field", "field", input)
+
+	exists, err := s.store.FieldExists(input.FieldId)
+	if err != nil {
+		return fmt.Errorf("Failed to check for field existance: %w", err)
+	}
+	if exists {
+		err = s.store.UpdateReportField(&store.ReportField{
+			Id:           input.FieldId,
+			OriginalName: input.Name,
+			OrderIndex:   input.OrderIndex,
+			ReportId:     input.ReportId,
+			SectionId:    input.SectionId,
+			AssetId:      input.CompanyId,
+			TaxonomyId:   input.TaxonomyId,
+		})
+		return err
+	}
+	_, err = s.store.AddReportField(&store.ReportField{
+		Id:           input.FieldId,
+		OriginalName: input.Name,
+		OrderIndex:   input.OrderIndex,
+		ReportId:     input.ReportId,
+		SectionId:    input.SectionId,
+		AssetId:      input.CompanyId,
+		TaxonomyId:   input.TaxonomyId,
+	})
+	return err
+}
+
+func (s *reportFieldService) SwapFields(fieldIdOne string, orderIndexOne int, fieldIdTwo string, orderIndexTwo int) error {
+	return s.store.SwapFields(fieldIdOne, orderIndexOne, fieldIdTwo, orderIndexTwo)
+
+}
+
+func (s *reportFieldService) DeleteField(id string) error {
+	reportField, err := s.store.GetReportFieldById(id)
+	if err != nil {
+		return err
+	}
+
+	err = s.store.DeleteReportField(id)
+	if err != nil {
+		return err
+	}
+
+	fieldFilter := &store.ReportFieldFilter{
+		SectionId: &reportField.SectionId,
+	}
+	reportFields, err := s.store.GetReportFields(fieldFilter)
+	if err != nil {
+		return err
+	}
+
+	for i, field := range reportFields {
+		s.store.UpdateReportField(&store.ReportField{
+			Id:           field.Id,
+			OriginalName: field.OriginalName,
+			OrderIndex:   i + 1,
+			ReportId:     field.ReportId,
+			SectionId:    field.SectionId,
+			AssetId:      field.AssetId,
+			TaxonomyId:   field.TaxonomyId,
+		})
+	}
+	// s.logger.Info("Report Fields", "fields", reportFields)
+
+	return nil
+}

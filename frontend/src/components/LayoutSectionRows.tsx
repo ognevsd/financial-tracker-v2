@@ -31,12 +31,12 @@ export function LayoutSectionRows({
     <>
       <h3 className="bg-slate-200">{section.name}</h3>
       {/* Fields */}
-      <table>
+      <table className="w-full">
         <thead className="bg-gray-200">
           <tr>
-            <th className="px-2 py-2">Order Index</th>
+            <th className="px-2 py-2 w-32">Order Index</th>
             <th className="px-2 py-2">Name</th>
-            <th />
+            <th className="w-32"/>
           </tr>
         </thead>
         <tbody>
