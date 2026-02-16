@@ -35,8 +35,7 @@ CREATE TABLE IF NOT EXISTS report_field (
     asset_id TEXT NOT NULL REFERENCES asset(id),
     taxonomy_id TEXT REFERENCES taxonomy(id),
     created_at TEXT NOT NULL DEFAULT current_timestamp,
-    updated_at TEXT NOT NULL DEFAULT current_timestamp,
-    UNIQUE(section_id, order_index)
+    updated_at TEXT NOT NULL DEFAULT current_timestamp
 );
 
 CREATE TABLE IF NOT EXISTS field_value (
