@@ -140,3 +140,29 @@ func (h *ReportFieldHandler) SwapFields(w http.ResponseWriter, r *http.Request) 
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *ReportFieldHandler) AddYear(w http.ResponseWriter, r *http.Request) {
+	var requestBody struct {
+		ReportId *string `json:"reportId"`
+		Year     *int    `json:"year"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		h.logger.Error("Error parsing json body", "error", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload(fmt.Sprintf("Error parsing json body: %v", err)))
+		return
+	}
+
+	if requestBody.ReportId == nil || requestBody.Year == nil {
+		h.logger.Error("Missing data")
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("Missing data"))
+		return
+	}
+
+	err = h.reportFieldService.AddYear(*requestBody.ReportId, *requestBody.Year)
+	if err != nil {
+		h.logger.Error("Error adding year", "error", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error adding year: %v", err)))
+		return
+	}
+}

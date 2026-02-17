@@ -8,18 +8,24 @@ import (
 )
 
 type reportFieldService struct {
-	logger *slog.Logger
-	store  store.ReportFieldStore
+	logger          *slog.Logger
+	store           store.ReportFieldStore
+	fieldValueStore store.ReportFieldValueStore
 }
 
-func NewReportFieldService(logger *slog.Logger, store store.ReportFieldStore) *reportFieldService {
-	return &reportFieldService{logger: logger, store: store}
+func NewReportFieldService(
+	logger *slog.Logger,
+	store store.ReportFieldStore,
+	fieldValueStore store.ReportFieldValueStore,
+) *reportFieldService {
+	return &reportFieldService{logger: logger, store: store, fieldValueStore: fieldValueStore}
 }
 
 type ReportFieldService interface {
 	UpsertField(input *UpsertFieldInput) error
 	DeleteField(id string) error
 	SwapFields(fieldIdOne string, orderIndexOne int, fieldIdTwo string, orderIndexTwo int) error
+	AddYear(reportId string, year int) error
 }
 
 type UpsertFieldInput struct {
@@ -99,6 +105,31 @@ func (s *reportFieldService) DeleteField(id string) error {
 		})
 	}
 	// s.logger.Info("Report Fields", "fields", reportFields)
+
+	return nil
+}
+
+func (s *reportFieldService) AddYear(reportId string, year int) error {
+	// 1. Get all fields of a report
+	// 2. For each field add year with empty value
+	reportFieldFilter := &store.ReportFieldFilter{
+		ReportId: reportId,
+	}
+	reportFields, err := s.store.GetReportFields(reportFieldFilter)
+	if err != nil {
+		return err
+	}
+	s.logger.Info("Report fields", "fields", reportFields)
+	for _, field := range reportFields {
+		_, err := s.fieldValueStore.AddFieldValue(&store.FieldValue{
+			FieldId: field.Id,
+			Year:    year,
+		})
+	
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

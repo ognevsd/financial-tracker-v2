@@ -69,6 +69,10 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 			r.Route("/{id}", func(r chi.Router) {
 				r.Delete("/", app.ReportFieldHandler.DeleteField)
 			})
+
+			r.Route("/year", func(r chi.Router) {
+				r.Post("/", app.ReportFieldHandler.AddYear)
+			})
 		})
 	})
 
