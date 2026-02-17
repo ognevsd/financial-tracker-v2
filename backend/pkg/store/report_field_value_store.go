@@ -10,7 +10,7 @@ type FieldValue struct {
 	Id      string `json:"id"`
 	FieldId string `json:"fieldId"`
 	Year    int    `json:"year"`
-	Value   int    `json:"value"`
+	Value   *int    `json:"value"`
 }
 
 type SqliteFieldValueStore struct {

@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS field_value (
     id TEXT PRIMARY KEY NOT NULL,
     field_id TEXT NOT NULL REFERENCES report_field(id) ON DELETE RESTRICT,
     year INTEGER NOT NULL CHECK(year > 0),
-    value INTEGER NOT NULL,
+    value INTEGER,
     created_at TEXT NOT NULL DEFAULT current_timestamp,
     updated_at TEXT NOT NULL DEFAULT current_timestamp
 );
