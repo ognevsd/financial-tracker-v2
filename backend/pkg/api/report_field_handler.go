@@ -167,3 +167,25 @@ func (h *ReportFieldHandler) AddYear(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *ReportFieldHandler) GetYears(w http.ResponseWriter, r *http.Request) {
+	companyId := r.URL.Query().Get("companyId")
+	if companyId == "" {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("companyId is missing"))
+		return
+	}
+	reportId := r.URL.Query().Get("reportId")
+	if reportId == "" {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("reportId is missing"))
+		return
+	}
+
+	years, err := h.reportFieldService.GetYears(companyId, reportId)
+	if err != nil {
+		h.logger.Error("Error getting years", "error", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error geting years: %v", err)))
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"years": years})
+}
