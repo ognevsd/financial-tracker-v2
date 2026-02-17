@@ -143,8 +143,9 @@ func (h *ReportFieldHandler) SwapFields(w http.ResponseWriter, r *http.Request) 
 
 func (h *ReportFieldHandler) AddYear(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
-		ReportId *string `json:"reportId"`
-		Year     *int    `json:"year"`
+		CompanyId *string `json:"companyId"`
+		ReportId  *string `json:"reportId"`
+		Year      *int    `json:"year"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
@@ -153,13 +154,13 @@ func (h *ReportFieldHandler) AddYear(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestBody.ReportId == nil || requestBody.Year == nil {
+	if requestBody.ReportId == nil || requestBody.Year == nil || requestBody.CompanyId == nil {
 		h.logger.Error("Missing data")
 		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("Missing data"))
 		return
 	}
 
-	err = h.reportFieldService.AddYear(*requestBody.ReportId, *requestBody.Year)
+	err = h.reportFieldService.AddYear(*requestBody.CompanyId, *requestBody.ReportId, *requestBody.Year)
 	if err != nil {
 		h.logger.Error("Error adding year", "error", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error adding year: %v", err)))

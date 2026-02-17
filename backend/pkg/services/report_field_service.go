@@ -25,7 +25,7 @@ type ReportFieldService interface {
 	UpsertField(input *UpsertFieldInput) error
 	DeleteField(id string) error
 	SwapFields(fieldIdOne string, orderIndexOne int, fieldIdTwo string, orderIndexTwo int) error
-	AddYear(reportId string, year int) error
+	AddYear(companyId string, reportId string, year int) error
 }
 
 type UpsertFieldInput struct {
@@ -109,11 +109,11 @@ func (s *reportFieldService) DeleteField(id string) error {
 	return nil
 }
 
-func (s *reportFieldService) AddYear(reportId string, year int) error {
-	// 1. Get all fields of a report
-	// 2. For each field add year with empty value
+func (s *reportFieldService) AddYear(companyId string, reportId string, year int) error {
+	// TODO: What if there are no fields?
 	reportFieldFilter := &store.ReportFieldFilter{
-		ReportId: reportId,
+		ReportId:  reportId,
+		CompanyId: companyId,
 	}
 	reportFields, err := s.store.GetReportFields(reportFieldFilter)
 	if err != nil {
@@ -125,7 +125,7 @@ func (s *reportFieldService) AddYear(reportId string, year int) error {
 			FieldId: field.Id,
 			Year:    year,
 		})
-	
+
 		if err != nil {
 			return err
 		}
@@ -133,3 +133,4 @@ func (s *reportFieldService) AddYear(reportId string, year int) error {
 
 	return nil
 }
+
