@@ -5,24 +5,29 @@ import (
 	"fmt"
 	"io/fs"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
 	"github.com/pressly/goose/v3"
 )
 
 const dbFile string = "data.db"
 
+func init() {
+	sql.Register("sqlite3_fk",
+		&sqlite3.SQLiteDriver{
+			ConnectHook: func(sc *sqlite3.SQLiteConn) error {
+				_, err := sc.Exec("PRAGMA foreign_keys = ON", nil)
+				return err
+			},
+		})
+}
+
 func Open() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", dbFile)
+	db, err := sql.Open("sqlite3_fk", dbFile)
 	if err != nil {
 		return nil, fmt.Errorf("db: open %w", err)
 	}
 
 	fmt.Println("Connected to the database...")
-
-	_, err = db.Exec("PRAGMA foreign_keys = ON")
-	if err != nil {
-		return nil, fmt.Errorf("db: enabling foreign keys: %w", err)
-	}
 
 	var fkEnabled int
 	err = db.QueryRow("PRAGMA foreign_keys").Scan(&fkEnabled)
