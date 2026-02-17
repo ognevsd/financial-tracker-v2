@@ -11,7 +11,7 @@ type ReportSection struct {
 	Name       string `json:"name"`
 	ReportId   string `json:"reportId"`
 	OrderIndex int    `json:"orderIndex"`
-	ParentId   string `json:"parentId"`
+	ParentId   *string `json:"parentId"`
 }
 
 type SqliteReportSectionStore struct {
