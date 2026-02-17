@@ -26,7 +26,7 @@ type ReportFieldService interface {
 	UpsertField(input *UpsertFieldInput) error
 	DeleteField(id string) error
 	SwapFields(fieldIdOne string, orderIndexOne int, fieldIdTwo string, orderIndexTwo int) error
-	AddYear(companyId string, reportId string, year int) error
+	UpsertYear(companyId string, reportId string, year int) error
 	GetYears(companyId string, reportId string) ([]int, error)
 }
 
@@ -111,8 +111,8 @@ func (s *reportFieldService) DeleteField(id string) error {
 	return nil
 }
 
-func (s *reportFieldService) AddYear(companyId string, reportId string, year int) error {
-	// TODO: What if there are no fields?
+func (s *reportFieldService) UpsertYear(companyId string, reportId string, year int) error {
+	// TODO: Should upsert instead of inserting
 	reportFieldFilter := &store.ReportFieldFilter{
 		ReportId:  reportId,
 		CompanyId: companyId,

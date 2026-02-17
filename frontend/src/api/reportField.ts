@@ -1,13 +1,13 @@
 import type { errorResponse } from "../types/error";
 import type { Years } from "../types/field";
 
-export async function addYear(
+export async function upsertYear(
   year: number,
   reportId: string,
   companyId: string,
 ) {
   const resp = await fetch("/api/report-field/year", {
-    method: "POST",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },

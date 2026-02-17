@@ -72,7 +72,7 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 
 			r.Route("/year", func(r chi.Router) {
 				r.Get("/", app.ReportFieldHandler.GetYears)
-				r.Post("/", app.ReportFieldHandler.AddYear)
+				r.Put("/", app.ReportFieldHandler.UpsertYear)
 			})
 		})
 	})

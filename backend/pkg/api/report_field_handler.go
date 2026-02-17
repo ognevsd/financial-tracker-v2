@@ -141,7 +141,7 @@ func (h *ReportFieldHandler) SwapFields(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *ReportFieldHandler) AddYear(w http.ResponseWriter, r *http.Request) {
+func (h *ReportFieldHandler) UpsertYear(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
 		CompanyId *string `json:"companyId"`
 		ReportId  *string `json:"reportId"`
@@ -160,7 +160,7 @@ func (h *ReportFieldHandler) AddYear(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.reportFieldService.AddYear(*requestBody.CompanyId, *requestBody.ReportId, *requestBody.Year)
+	err = h.reportFieldService.UpsertYear(*requestBody.CompanyId, *requestBody.ReportId, *requestBody.Year)
 	if err != nil {
 		h.logger.Error("Error adding year", "error", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error adding year: %v", err)))

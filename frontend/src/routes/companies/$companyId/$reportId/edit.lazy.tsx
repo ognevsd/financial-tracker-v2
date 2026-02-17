@@ -20,7 +20,7 @@ import {
   type SwapFieldsData,
   type UpsertData,
 } from "../../../../api/reportLayout";
-import { addYear, getYears } from "../../../../api/reportField";
+import { addYear, getYears, upsertYear } from "../../../../api/reportField";
 
 export const Route = createLazyFileRoute(
   "/companies/$companyId/$reportId/edit",
@@ -63,8 +63,8 @@ function YearModification({
     staleTime: 120_000,
   });
 
-  const addYearMutation = useMutation({
-    mutationFn: (year: number) => addYear(year, reportId, companyId),
+  const upsertYearMiutation = useMutation({
+    mutationFn: (year: number) => upsertYear(year, reportId, companyId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [companyId, reportId, "years"],
