@@ -54,7 +54,7 @@ function YearModification({
   companyId: string;
   reportId: string;
 }) {
-  const [years, setYears] = useState([]);
+  const [years, setYears] = useState<number[]>([]);
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -91,7 +91,7 @@ function YearModification({
     setYears((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const onYearChange = (index: number, newValue: string) => {
+  const onYearChange = (index: number, newValue: number) => {
     setYears((prev) => {
       const newYears = [...prev];
       newYears[index] = newValue;
@@ -109,6 +109,7 @@ function YearModification({
       <div className="grid grid-cols-4 gap-2">
         {years.map((year, index) => {
           const isDuplicate = years.filter((y) => y === year).length > 1;
+          console.log(years);
           return (
             <div
               key={index}
@@ -122,7 +123,7 @@ function YearModification({
                 value={year}
                 onBlur={(e) => handleOnBlur(Number(e.target.value))}
                 pattern="\d{4}"
-                onChange={(e) => onYearChange(index, e.target.value)}
+                onChange={(e) => onYearChange(index, Number(e.target.value))}
                 onKeyPress={(e) => {
                   if (!/[0-9]/.test(e.key)) {
                     e.preventDefault();
