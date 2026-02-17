@@ -20,6 +20,7 @@ import {
   type SwapFieldsData,
   type UpsertData,
 } from "../../../../api/reportLayout";
+import { addYear, getYears } from "../../../../api/reportField";
 
 export const Route = createLazyFileRoute(
   "/companies/$companyId/$reportId/edit",
@@ -46,26 +47,41 @@ function flattenLayout(
   return flatFields;
 }
 
-function YearModification() {
-  const defaultYears = [
-    "2025",
-    "2024",
-    "2023",
-    "2022",
-    "2021",
-    "2020",
-    "2019",
-    "2018",
-    "2017",
-    "2016",
-    "2015",
-    "2014",
-    "2013",
-    "2012",
-    "2011",
-    "2010",
-  ];
-  const [years, setYears] = useState(defaultYears);
+function YearModification({
+  companyId,
+  reportId,
+}: {
+  companyId: string;
+  reportId: string;
+}) {
+  const [years, setYears] = useState([]);
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryFn: () => getYears(companyId, reportId),
+    queryKey: [companyId, reportId, "years"],
+    staleTime: 120_000,
+  });
+
+  const addYearMutation = useMutation({
+    mutationFn: (year: number) => addYear(year, reportId, companyId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [companyId, reportId, "years"],
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (data?.years) {
+      setYears(data.years);
+    }
+  }, [data?.years]);
+
+  // =========================================================================
+  if (isLoading) {
+    return <Loading />;
+  }
 
   const onYearAdd = () => {
     setYears((prev) => [...prev, ""]);
@@ -83,7 +99,7 @@ function YearModification() {
     });
   };
 
-  const handleOnBlur = () => {
+  const handleOnBlur = (year: number) => {
     setYears((prev) => [...prev].sort((a, b) => Number(b) - Number(a)));
   };
 
@@ -104,7 +120,7 @@ function YearModification() {
                 placeholder="YYYY"
                 maxLength={4}
                 value={year}
-                onBlur={handleOnBlur}
+                onBlur={(e) => handleOnBlur(Number(e.target.value))}
                 pattern="\d{4}"
                 onChange={(e) => onYearChange(index, e.target.value)}
                 onKeyPress={(e) => {
@@ -280,7 +296,7 @@ function RouteComponent() {
 
   return (
     <div className="space-y-2">
-      <YearModification />
+      <YearModification companyId={companyId} reportId={reportId} />
       <hr />
       {data?.layout.map((section) => (
         <LayoutSectionRows
