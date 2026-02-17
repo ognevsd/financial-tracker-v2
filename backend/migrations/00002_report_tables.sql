@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS field_value (
     year INTEGER NOT NULL CHECK(year > 0),
     value INTEGER,
     created_at TEXT NOT NULL DEFAULT current_timestamp,
-    updated_at TEXT NOT NULL DEFAULT current_timestamp
+    updated_at TEXT NOT NULL DEFAULT current_timestamp,
+    UNIQUE(field_id, year)
 );
 -- +goose StatementEnd 
 
