@@ -41,7 +41,8 @@ func (handler *ReportSectionHandler) AddReportSection(w http.ResponseWriter, r *
 
 func (handler *ReportSectionHandler) GetAllReportSections(w http.ResponseWriter, r *http.Request) {
 	filter := store.ReportSectionFilter{
-		ReportId: r.URL.Query().Get("reportId"),
+		ReportId:         r.URL.Query().Get("reportId"),
+		FilterByParentId: false,
 	}
 	reportSections, err := handler.store.GetAllReportSections(filter)
 	if err != nil {

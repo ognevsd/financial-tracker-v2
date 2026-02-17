@@ -5,7 +5,6 @@ import (
 
 	"github.com/ognevsd/financial-tracker-v2/pkg/models"
 	"github.com/ognevsd/financial-tracker-v2/pkg/store"
-	"github.com/ognevsd/financial-tracker-v2/pkg/utils"
 )
 
 type reportService struct {
@@ -44,6 +43,7 @@ func (s *reportService) getSectionDetails(companyId string, reportId string, par
 	sectionsFilter := store.ReportSectionFilter{
 		ReportId: reportId,
 		ParentId: &parentId,
+		FilterByParentId: true,
 	}
 	fieldFilter := store.ReportFieldFilter{
 		CompanyId: companyId,
@@ -93,8 +93,9 @@ func (s *reportService) GetLayout(reportId string, companyId string) (models.Lay
 	layout := models.Layout{}
 
 	sectionsFilter := store.ReportSectionFilter{
-		ReportId: reportId,
-		ParentId: utils.StringPtr(""),
+		ReportId:         reportId,
+		ParentId:         nil,
+		FilterByParentId: true,
 	}
 
 	sections, _ := s.reportSectionStore.GetAllReportSections(sectionsFilter)

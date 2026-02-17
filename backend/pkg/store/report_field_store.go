@@ -178,6 +178,10 @@ func (store *SqliteReportFieldStore) FieldExists(id string) (bool, error) {
 }
 
 func (store *SqliteReportFieldStore) GetReportFields(filter *ReportFieldFilter) ([]*ReportField, error) {
+	if filter == nil {
+		filter = &ReportFieldFilter{}
+	}
+
 	query := `
 	SELECT id, original_name, order_index, report_id, section_id, taxonomy_id
 	FROM report_field

@@ -7,10 +7,10 @@ import (
 )
 
 type ReportSection struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	ReportId   string `json:"reportId"`
-	OrderIndex int    `json:"orderIndex"`
+	ID         string  `json:"id"`
+	Name       string  `json:"name"`
+	ReportId   string  `json:"reportId"`
+	OrderIndex int     `json:"orderIndex"`
 	ParentId   *string `json:"parentId"`
 }
 
@@ -31,8 +31,9 @@ type ReportSectionStore interface {
 }
 
 type ReportSectionFilter struct {
-	ReportId string
-	ParentId *string
+	ReportId         string
+	ParentId         *string
+	FilterByParentId bool
 }
 
 func (store *SqliteReportStore) AddReportSection(reportSection *ReportSection) (*ReportSection, error) {
@@ -67,15 +68,19 @@ func (store *SqliteReportStore) GetAllReportSections(filter ReportSectionFilter)
 	var args []any
 
 	if filter.ReportId != "" {
-		query += "AND report_id = ?"
+		query += " AND report_id = ?"
 		args = append(args, filter.ReportId)
 	}
-	if filter.ParentId != nil {
-		query += "AND parent_id = ?"
-		args = append(args, *filter.ParentId)
+	if filter.FilterByParentId {
+		if filter.ParentId == nil {
+			query += " AND parent_id IS NULL"
+		} else {
+			query += " AND parent_id = ?"
+			args = append(args, filter.ParentId)
+		}
 	}
 
-	query += "ORDER BY order_index ASC"
+	query += " ORDER BY order_index ASC"
 
 	var reportSections []*ReportSection
 
