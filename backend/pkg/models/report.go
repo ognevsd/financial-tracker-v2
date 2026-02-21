@@ -1,21 +1,23 @@
 package models
 
 type Field struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	values map[int64]int64
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	OrderIndex int64  `json:"orderIndex"`
+	Values     map[int]*int
 }
 
 type Section struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
-	Sections []Section `json:"sections"`
-	Fields   []Field   `json:"fields"`
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	OrderIndex int64     `json:"orderIndex"`
+	Sections   []Section `json:"sections"`
+	Fields     []Field   `json:"fields"`
 }
 
 type Report struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
+	ID string `json:"id"`
+	// Name     string    `json:"name"`
 	Years    []int64   `json:"years"`
 	Sections []Section `json:"sections"`
 }

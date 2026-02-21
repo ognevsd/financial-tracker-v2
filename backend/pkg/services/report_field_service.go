@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -155,7 +154,8 @@ func (s *reportFieldService) GetYears(companyId string, reportId string) ([]int,
 		return nil, err
 	}
 	if len(reportField) == 0 {
-		return nil, errors.New("No fields found")
+		// return nil, errors.New("No fields found")
+		return years, nil
 	}
 
 	// 2. Get all year values

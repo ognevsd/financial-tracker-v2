@@ -47,6 +47,7 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 			})
 
 			r.Get("/layout", app.ReportHandler.GetLayout)
+			r.Get("/details", app.ReportHandler.GetReportDetails)
 		})
 
 		r.Route("/report-section", func(r chi.Router) {

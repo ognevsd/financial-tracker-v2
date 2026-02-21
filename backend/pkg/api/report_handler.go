@@ -166,5 +166,27 @@ func (handler *ReportHandler) GetLayout(w http.ResponseWriter, r *http.Request) 
 	}
 
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"layout": layout})
+}
 
+func (h *ReportHandler) GetReportDetails(w http.ResponseWriter, r *http.Request) {
+	reportId := r.URL.Query().Get("reportId")
+	if reportId == "" {
+		h.newLogger.Error("Missing report id param")
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("Missing reportId param"))
+		return
+	}
+	companyId := r.URL.Query().Get("companyId")
+	if companyId == "" {
+		h.newLogger.Error("Missing companyId param")
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("Missing companyId param"))
+		return
+	}
+	report, err := h.reportService.GetReport(reportId, companyId)
+	if err != nil {
+		h.newLogger.Error("Error occured while building layout", "error", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error occured while building layout: %v", err)))
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"report": report})
 }
