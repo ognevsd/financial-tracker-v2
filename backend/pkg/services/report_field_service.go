@@ -26,7 +26,8 @@ type ReportFieldService interface {
 	UpsertField(input *UpsertFieldInput) error
 	DeleteField(id string) error
 	SwapFields(fieldIdOne string, orderIndexOne int, fieldIdTwo string, orderIndexTwo int) error
-	UpsertYear(companyId string, reportId string, year int) error
+	AddYear(companyId string, reportId string, year int) error
+	UpdateYear(companyId string, reportId string, year int, prevYear int) error
 	GetYears(companyId string, reportId string) ([]int, error)
 }
 
@@ -111,8 +112,7 @@ func (s *reportFieldService) DeleteField(id string) error {
 	return nil
 }
 
-func (s *reportFieldService) UpsertYear(companyId string, reportId string, year int) error {
-	// TODO: Should upsert instead of inserting
+func (s *reportFieldService) AddYear(companyId string, reportId string, year int) error {
 	reportFieldFilter := &store.ReportFieldFilter{
 		ReportId:  reportId,
 		CompanyId: companyId,
@@ -133,6 +133,14 @@ func (s *reportFieldService) UpsertYear(companyId string, reportId string, year 
 		}
 	}
 
+	return nil
+}
+
+func (s *reportFieldService) UpdateYear(companyId string, reportId string, year int, prevYear int) error {
+	return s.fieldValueStore.ChangeYear(companyId, reportId, year, prevYear)
+}
+
+func (s *reportFieldService) DeleteYear(companyId string, reportId string, year int) error {
 	return nil
 }
 

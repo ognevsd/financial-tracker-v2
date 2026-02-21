@@ -146,6 +146,7 @@ func (h *ReportFieldHandler) UpsertYear(w http.ResponseWriter, r *http.Request) 
 		CompanyId *string `json:"companyId"`
 		ReportId  *string `json:"reportId"`
 		Year      *int    `json:"year"`
+		PrevYear  *int    `json:"prevYear"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
@@ -159,12 +160,22 @@ func (h *ReportFieldHandler) UpsertYear(w http.ResponseWriter, r *http.Request) 
 		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("Missing data"))
 		return
 	}
+	h.logger.Info("year", "year", requestBody)
 
-	err = h.reportFieldService.UpsertYear(*requestBody.CompanyId, *requestBody.ReportId, *requestBody.Year)
-	if err != nil {
-		h.logger.Error("Error adding year", "error", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error adding year: %v", err)))
-		return
+	if requestBody.PrevYear == nil {
+		err = h.reportFieldService.AddYear(*requestBody.CompanyId, *requestBody.ReportId, *requestBody.Year)
+		if err != nil {
+			h.logger.Error("Error adding year", "error", err)
+			utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error adding year: %v", err)))
+			return
+		}
+	} else {
+		err = h.reportFieldService.UpdateYear(*requestBody.CompanyId, *requestBody.ReportId, *requestBody.Year, *requestBody.PrevYear)
+		if err != nil {
+			h.logger.Error("Error changing year", "error", err)
+			utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error adding year: %v", err)))
+			return
+		}
 	}
 }
 

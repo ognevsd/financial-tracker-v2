@@ -10,7 +10,7 @@ type FieldValue struct {
 	Id      string `json:"id"`
 	FieldId string `json:"fieldId"`
 	Year    int    `json:"year"`
-	Value   *int    `json:"value"`
+	Value   *int   `json:"value"`
 }
 
 type SqliteFieldValueStore struct {
@@ -26,6 +26,7 @@ type ReportFieldValueStore interface {
 	GetFieldValueByFieldId(fieldId string) ([]*FieldValue, error)
 	UpdateFieldValue(*FieldValue) error
 	DeleteFieldValueByFieldId(fieldId string) error
+	ChangeYear(companyId string, reportId string, year int, prevYear int) error
 }
 
 func (store *SqliteFieldValueStore) AddFieldValue(fieldValue *FieldValue) (*FieldValue, error) {
@@ -106,6 +107,30 @@ func (store *SqliteFieldValueStore) DeleteFieldValueByFieldId(fieldId string) er
 		return err
 	}
 
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (s *SqliteFieldValueStore) ChangeYear(companyId string, reportId string, year int, prevYear int) error {
+	query := `
+	UPDATE field_value
+	SET year = ?, updated_at = current_timestamp
+	WHERE year = ?
+		AND field_id IN (
+			SELECT rf.id FROM report_field rf
+			WHERE rf.report_id = ? AND rf.asset_id = ?
+		)
+	`
+	res, err := s.db.Exec(query, year, prevYear, reportId, companyId)
+	if err != nil {
+		return err
+	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
 		return err

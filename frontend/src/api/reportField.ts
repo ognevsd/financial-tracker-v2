@@ -3,6 +3,7 @@ import type { Years } from "../types/field";
 
 export async function upsertYear(
   year: number,
+  prevYearValue: number | null,
   reportId: string,
   companyId: string,
 ) {
@@ -15,6 +16,7 @@ export async function upsertYear(
       year: year,
       reportId: reportId,
       companyId: companyId,
+      prevYear: prevYearValue,
     }),
   });
 

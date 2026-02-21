@@ -1,14 +1,6 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import Button from "../../../../components/ui/button";
-import { defaultLayoutData } from "../../../../lib/reportUtils";
-import type {
-  Layout,
-  LayoutField,
-  LayoutSection,
-} from "../../../../types/report";
-import { useEffect, useMemo, useState } from "react";
-import { PlusIcon, Trash2 } from "lucide-react";
-import { Input } from "../../../../components/ui/input";
+import type { LayoutField, LayoutSection } from "../../../../types/report";
+import { useEffect, useState } from "react";
 import { LayoutSectionRows } from "../../../../components/LayoutSectionRows";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLayout } from "../../../../api/layout";
@@ -20,7 +12,7 @@ import {
   type SwapFieldsData,
   type UpsertData,
 } from "../../../../api/reportLayout";
-import { addYear, getYears, upsertYear } from "../../../../api/reportField";
+import { YearModification } from "../../../../components/YearModification";
 
 export const Route = createLazyFileRoute(
   "/companies/$companyId/$reportId/edit",
@@ -45,103 +37,6 @@ function flattenLayout(
   });
 
   return flatFields;
-}
-
-function YearModification({
-  companyId,
-  reportId,
-}: {
-  companyId: string;
-  reportId: string;
-}) {
-  const [years, setYears] = useState<number[]>([]);
-  const queryClient = useQueryClient();
-
-  const { data, isLoading } = useQuery({
-    queryFn: () => getYears(companyId, reportId),
-    queryKey: [companyId, reportId, "years"],
-    staleTime: 120_000,
-  });
-
-  const upsertYearMiutation = useMutation({
-    mutationFn: (year: number) => upsertYear(year, reportId, companyId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [companyId, reportId, "years"],
-      });
-    },
-  });
-
-  useEffect(() => {
-    if (data?.years) {
-      setYears(data.years);
-    }
-  }, [data?.years]);
-
-  // =========================================================================
-  if (isLoading) {
-    return <Loading />;
-  }
-
-  const onYearAdd = () => {
-    setYears((prev) => [...prev, ""]);
-  };
-
-  const onYearDelete = (index: number) => {
-    setYears((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const onYearChange = (index: number, newValue: number) => {
-    setYears((prev) => {
-      const newYears = [...prev];
-      newYears[index] = newValue;
-      return newYears;
-    });
-  };
-
-  const handleOnBlur = (year: number) => {
-    setYears((prev) => [...prev].sort((a, b) => Number(b) - Number(a)));
-  };
-
-  return (
-    <>
-      <h3 className="bg-slate-200">Years</h3>
-      <div className="grid grid-cols-4 gap-2">
-        {years.map((year, index) => {
-          const isDuplicate = years.filter((y) => y === year).length > 1;
-          console.log(years);
-          return (
-            <div
-              key={index}
-              className={`bg-gray-200 rounded flex items-center p-2 max-w-sm min-w-32 gap-2 
-                ${isDuplicate ? "border-2 border-red-500 bg-red-50" : ""}`}
-            >
-              <Input
-                type="text"
-                placeholder="YYYY"
-                maxLength={4}
-                value={year}
-                onBlur={(e) => handleOnBlur(Number(e.target.value))}
-                pattern="\d{4}"
-                onChange={(e) => onYearChange(index, Number(e.target.value))}
-                onKeyPress={(e) => {
-                  if (!/[0-9]/.test(e.key)) {
-                    e.preventDefault();
-                  }
-                }}
-              />
-              <Button variant="secondary" onClick={() => onYearDelete(index)}>
-                <Trash2 />
-              </Button>
-            </div>
-          );
-        })}
-        <Button onClick={onYearAdd}>
-          <PlusIcon />
-        </Button>
-      </div>
-    </>
-  );
 }
 
 function RouteComponent() {
