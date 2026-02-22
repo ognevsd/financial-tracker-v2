@@ -3,7 +3,7 @@ package models
 type Field struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
-	OrderIndex int64  `json:"orderIndex"`
+	OrderIndex int    `json:"orderIndex"`
 	Values     map[int]*int
 }
 
@@ -33,7 +33,7 @@ type LayoutSection struct {
 	Name       string          `json:"name"`
 	OrderIndex int64           `json:"orderIndex"`
 	Sections   []LayoutSection `json:"sections"`
-	Fields     []LayoutField   `json:"fields"`
+	Fields     []Field         `json:"fields"`
 }
 
 type Layout []LayoutSection
