@@ -36,9 +36,54 @@ func NewReportService(
 	}
 }
 
-func (s *reportService) getSectionDetails(companyId string, reportId string, parentId string) (*models.LayoutSection, error) {
+type fieldFetcher func(filter *store.ReportFieldFilter) ([]models.Field, error)
+
+func (s *reportService) fieldFetcher(filter *store.ReportFieldFilter) ([]models.Field, error) {
+	reportFields := []models.Field{}
+
+	fields, err := s.reportFieldStore.GetReportFields(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, field := range fields {
+		reportFields = append(reportFields, models.Field{
+			ID:         field.Id,
+			Name:       field.OriginalName,
+			OrderIndex: field.OrderIndex,
+		})
+	}
+
+	return reportFields, nil
+}
+
+func (s *reportService) layoutFieldFetcher(filter *store.ReportFieldFilter) ([]models.Field, error) {
+	return s.fieldFetcher(filter)
+}
+
+func (s *reportService) reportFieldFetcher(filter *store.ReportFieldFilter) ([]models.Field, error) {
+	reportFields, err := s.fieldFetcher(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, field := range reportFields {
+		values, err := s.reportFieldValueStore.GetFieldValueByFieldId(field.ID)
+		if err != nil {
+			return nil, err
+		}
+		fieldValues := map[int]*int{}
+		for _, val := range values {
+			fieldValues[val.Year] = val.Value
+		}
+		field.Values = fieldValues
+	}
+
+	return reportFields, nil
+}
+
+func (s *reportService) getSectionDetails(companyId string, reportId string, parentId string, fetchFields fieldFetcher) (*models.LayoutSection, error) {
 	layoutSection := &models.LayoutSection{}
-	layoutFields := []models.LayoutField{}
 	layoutSections := []models.LayoutSection{}
 
 	sectionsFilter := store.ReportSectionFilter{
@@ -51,18 +96,13 @@ func (s *reportService) getSectionDetails(companyId string, reportId string, par
 		ReportId:  reportId,
 		SectionId: &parentId,
 	}
-	fields, err := s.reportFieldStore.GetReportFields(&fieldFilter)
+
+	fields, err := fetchFields(&fieldFilter)
 	if err != nil {
 		return nil, err
 	}
-	for _, field := range fields {
-		layoutFields = append(layoutFields, models.LayoutField{
-			ID:         field.Id,
-			Name:       field.OriginalName,
-			OrderIndex: int64(field.OrderIndex),
-		})
-	}
-	layoutSection.Fields = layoutFields
+
+	layoutSection.Fields = fields
 
 	sections, err := s.reportSectionStore.GetAllReportSections(sectionsFilter)
 	if err != nil {
@@ -70,7 +110,7 @@ func (s *reportService) getSectionDetails(companyId string, reportId string, par
 	}
 
 	for _, section := range sections {
-		tmp, err := s.getSectionDetails(companyId, reportId, section.ID)
+		tmp, err := s.getSectionDetails(companyId, reportId, section.ID, fetchFields)
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +139,7 @@ func (s *reportService) GetLayout(reportId string, companyId string) (models.Lay
 
 	sections, _ := s.reportSectionStore.GetAllReportSections(sectionsFilter)
 	for _, section := range sections {
-		sectionDetails, _ := s.getSectionDetails(companyId, reportId, section.ID)
+		sectionDetails, _ := s.getSectionDetails(companyId, reportId, section.ID, s.layoutFieldFetcher)
 		layout = append(layout, models.LayoutSection{
 			ID:         section.ID,
 			Name:       section.Name,
@@ -145,7 +185,7 @@ func (s *reportService) getReportSectionDetails(companyId string, reportId strin
 		reportFields = append(reportFields, models.Field{
 			ID:         field.Id,
 			Name:       field.OriginalName,
-			OrderIndex: int64(field.OrderIndex),
+			OrderIndex: field.OrderIndex,
 			Values:     fieldValues,
 		})
 	}
