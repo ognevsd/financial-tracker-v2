@@ -27,6 +27,7 @@ type ReportFieldValueStore interface {
 	UpdateFieldValue(*FieldValue) error
 	DeleteFieldValueByFieldId(fieldId string) error
 	ChangeYear(companyId string, reportId string, year int, prevYear int) error
+	DeleteYear(companyId string, reportId string, year int) error
 }
 
 func (store *SqliteFieldValueStore) AddFieldValue(fieldValue *FieldValue) (*FieldValue, error) {
@@ -128,6 +129,30 @@ func (s *SqliteFieldValueStore) ChangeYear(companyId string, reportId string, ye
 		)
 	`
 	res, err := s.db.Exec(query, year, prevYear, reportId, companyId)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (s *SqliteFieldValueStore) DeleteYear(companyId string, reportId string, year int) error {
+	query := `
+	DELETE FROM field_value
+	WHERE year = ?
+	AND field_id IN (
+		SELECT rf.id FROM report_field rf
+		WHERE rf.report_id = ? AND rf.asset_id = ?
+	)
+	`
+
+	res, err := s.db.Exec(query, year, reportId, companyId)
 	if err != nil {
 		return err
 	}

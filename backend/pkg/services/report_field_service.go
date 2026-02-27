@@ -28,6 +28,7 @@ type ReportFieldService interface {
 	AddYear(companyId string, reportId string, year int) error
 	UpdateYear(companyId string, reportId string, year int, prevYear int) error
 	GetYears(companyId string, reportId string) ([]int, error)
+	DeleteYear(compnyId string, reportId string, year int) error
 }
 
 type UpsertFieldInput struct {
@@ -140,7 +141,7 @@ func (s *reportFieldService) UpdateYear(companyId string, reportId string, year 
 }
 
 func (s *reportFieldService) DeleteYear(companyId string, reportId string, year int) error {
-	return nil
+	return s.fieldValueStore.DeleteYear(companyId, reportId, year)
 }
 
 func (s *reportFieldService) GetYears(companyId string, reportId string) ([]int, error) {

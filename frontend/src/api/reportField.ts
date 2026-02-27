@@ -19,6 +19,7 @@ export async function upsertYear(
       prevYear: prevYearValue,
     }),
   });
+  console.log(resp.status);
 
   if (!resp.ok) {
     const errData: errorResponse = await resp.json().catch(() => {});
@@ -42,4 +43,27 @@ export async function getYears(
     throw new Error(errData.error);
   }
   return resp.json();
+}
+
+export async function deleteYear(
+  companyId: string,
+  reportId: string,
+  year: number,
+) {
+  const params = new URLSearchParams({
+    companyId: companyId,
+    reportId: reportId,
+    year: String(year),
+  });
+  const url = `/api/report-field/year?${params.toString()}`;
+  const resp = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!resp.ok) {
+    const errData: errorResponse = await resp.json().catch(() => ({}));
+    throw new Error(errData.error);
+  }
 }

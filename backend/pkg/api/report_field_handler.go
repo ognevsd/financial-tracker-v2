@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/ognevsd/financial-tracker-v2/pkg/services"
 	"github.com/ognevsd/financial-tracker-v2/pkg/store"
@@ -199,4 +200,37 @@ func (h *ReportFieldHandler) GetYears(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"years": years})
+}
+
+func (h *ReportFieldHandler) DeleteYear(w http.ResponseWriter, r *http.Request) {
+	companyId := r.URL.Query().Get("companyId")
+	if companyId == "" {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("companyId is missing"))
+		return
+	}
+	reportId := r.URL.Query().Get("reportId")
+	if reportId == "" {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("reportId is missing"))
+		return
+	}
+	yearStr := r.URL.Query().Get("year")
+	if yearStr == "" {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("year is missing"))
+		return
+	}
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload(fmt.Sprintf("cannot parse to int year: %s", yearStr)))
+		return
+	}
+
+	err = h.reportFieldService.DeleteYear(companyId, reportId, year)
+	if err != nil {
+		h.logger.Error("Error when deleting year", "error", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error when deleting year: %v", err)))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

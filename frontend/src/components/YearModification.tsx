@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { getYears, upsertYear } from "../api/reportField";
+import { deleteYear, getYears, upsertYear } from "../api/reportField";
 import Loading from "./Loading";
 import { Input } from "./ui/input";
 import Button from "./ui/button";
@@ -38,6 +38,15 @@ export function YearModification({
     },
   });
 
+  const deleteYearMutation = useMutation({
+    mutationFn: (year: number) => deleteYear(companyId, reportId, year),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [companyId, reportId, "years"],
+      });
+    },
+  });
+
   useEffect(() => {
     if (data?.years) {
       setYears(data.years);
@@ -53,8 +62,9 @@ export function YearModification({
     setYears((prev) => [...prev, ""]);
   };
 
-  const onYearDelete = (index: number) => {
+  const onYearDelete = (index: number, year: number) => {
     setYears((prev) => prev.filter((_, i) => i !== index));
+    deleteYearMutation.mutate(year);
   };
 
   const onYearChange = (index: number, newValue: number) => {
@@ -106,7 +116,7 @@ export function YearModification({
                   }
                 }}
               />
-              <Button variant="secondary" onClick={() => onYearDelete(index)}>
+              <Button variant="secondary" onClick={() => onYearDelete(index, year)}>
                 <Trash2 />
               </Button>
             </div>
