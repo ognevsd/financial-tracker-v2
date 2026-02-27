@@ -22,18 +22,4 @@ type Report struct {
 	Sections []Section `json:"sections"`
 }
 
-type LayoutField struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	OrderIndex int64  `json:"orderIndex"`
-}
-
-type LayoutSection struct {
-	ID         string          `json:"id"`
-	Name       string          `json:"name"`
-	OrderIndex int64           `json:"orderIndex"`
-	Sections   []LayoutSection `json:"sections"`
-	Fields     []Field         `json:"fields"`
-}
-
-type Layout []LayoutSection
+type Layout []Section

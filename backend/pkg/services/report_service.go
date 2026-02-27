@@ -67,8 +67,8 @@ func (s *reportService) reportFieldFetcher(filter *store.ReportFieldFilter) ([]m
 		return nil, err
 	}
 
-	for _, field := range reportFields {
-		values, err := s.reportFieldValueStore.GetFieldValueByFieldId(field.ID)
+	for i := range reportFields {
+		values, err := s.reportFieldValueStore.GetFieldValueByFieldId(reportFields[i].ID)
 		if err != nil {
 			return nil, err
 		}
@@ -76,15 +76,15 @@ func (s *reportService) reportFieldFetcher(filter *store.ReportFieldFilter) ([]m
 		for _, val := range values {
 			fieldValues[val.Year] = val.Value
 		}
-		field.Values = fieldValues
+		reportFields[i].Values = fieldValues
 	}
 
 	return reportFields, nil
 }
 
-func (s *reportService) getSectionDetails(companyId string, reportId string, parentId string, fetchFields fieldFetcher) (*models.LayoutSection, error) {
-	layoutSection := &models.LayoutSection{}
-	layoutSections := []models.LayoutSection{}
+func (s *reportService) getSectionDetails(companyId string, reportId string, parentId string, fetchFields fieldFetcher) (*models.Section, error) {
+	layoutSection := &models.Section{}
+	layoutSections := []models.Section{}
 
 	sectionsFilter := store.ReportSectionFilter{
 		ReportId:         reportId,
@@ -114,7 +114,7 @@ func (s *reportService) getSectionDetails(companyId string, reportId string, par
 		if err != nil {
 			return nil, err
 		}
-		layoutSections = append(layoutSections, models.LayoutSection{
+		layoutSections = append(layoutSections, models.Section{
 			ID:         section.ID,
 			Name:       section.Name,
 			OrderIndex: int64(section.OrderIndex),
@@ -140,7 +140,7 @@ func (s *reportService) GetLayout(reportId string, companyId string) (models.Lay
 	sections, _ := s.reportSectionStore.GetAllReportSections(sectionsFilter)
 	for _, section := range sections {
 		sectionDetails, _ := s.getSectionDetails(companyId, reportId, section.ID, s.layoutFieldFetcher)
-		layout = append(layout, models.LayoutSection{
+		layout = append(layout, models.Section{
 			ID:         section.ID,
 			Name:       section.Name,
 			OrderIndex: int64(section.OrderIndex),
@@ -150,69 +150,6 @@ func (s *reportService) GetLayout(reportId string, companyId string) (models.Lay
 	}
 
 	return layout, nil
-}
-
-func (s *reportService) getReportSectionDetails(companyId string, reportId string, parentId string) (*models.Section, error) {
-	reportSection := &models.Section{}
-	reportFields := []models.Field{}
-	reportSections := []models.Section{}
-
-	sectionsFilter := store.ReportSectionFilter{
-		ReportId:         reportId,
-		ParentId:         &parentId,
-		FilterByParentId: true,
-	}
-	fieldFilter := store.ReportFieldFilter{
-		CompanyId: companyId,
-		ReportId:  reportId,
-		SectionId: &parentId,
-	}
-	fields, err := s.reportFieldStore.GetReportFields(&fieldFilter)
-	if err != nil {
-		return nil, err
-	}
-	for _, field := range fields {
-		values, err := s.reportFieldValueStore.GetFieldValueByFieldId(field.Id)
-		if err != nil {
-			return nil, err
-		}
-		fieldValues := map[int]*int{}
-		for _, val := range values {
-			fieldValues[val.Year] = val.Value
-		}
-		s.logger.Info("Field values", "values", fieldValues)
-
-		reportFields = append(reportFields, models.Field{
-			ID:         field.Id,
-			Name:       field.OriginalName,
-			OrderIndex: field.OrderIndex,
-			Values:     fieldValues,
-		})
-	}
-	reportSection.Fields = reportFields
-
-	sections, err := s.reportSectionStore.GetAllReportSections(sectionsFilter)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, section := range sections {
-		tmp, err := s.getReportSectionDetails(companyId, reportId, section.ID)
-		if err != nil {
-			return nil, err
-		}
-		reportSections = append(reportSections, models.Section{
-			ID:         section.ID,
-			Name:       section.Name,
-			OrderIndex: int64(section.OrderIndex),
-			Fields:     tmp.Fields,
-			Sections:   tmp.Sections,
-		})
-
-	}
-	reportSection.Sections = reportSections
-
-	return reportSection, nil
 }
 
 func (s *reportService) GetReport(reportId string, companyId string) (models.Report, error) {
@@ -227,7 +164,7 @@ func (s *reportService) GetReport(reportId string, companyId string) (models.Rep
 
 	sections, _ := s.reportSectionStore.GetAllReportSections(sectionsFilter)
 	for _, section := range sections {
-		sectionDetails, _ := s.getReportSectionDetails(companyId, reportId, section.ID)
+		sectionDetails, _ := s.getSectionDetails(companyId, reportId, section.ID, s.reportFieldFetcher)
 		report.Sections = append(report.Sections, models.Section{
 			ID:         section.ID,
 			Name:       section.Name,
