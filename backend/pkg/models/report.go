@@ -18,7 +18,7 @@ type Section struct {
 type Report struct {
 	ID string `json:"id"`
 	// Name     string    `json:"name"`
-	Years    []int64   `json:"years"`
+	Years    []int     `json:"years"`
 	Sections []Section `json:"sections"`
 }
 

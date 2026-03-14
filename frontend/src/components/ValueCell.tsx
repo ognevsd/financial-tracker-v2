@@ -7,11 +7,13 @@ export default function ValueCell({
   isEditing,
   value,
   onChangeValue,
+  onBlur,
 }: {
   isFinancial: boolean;
   isEditing: boolean;
   value: EditValue;
   onChangeValue: (v: EditValue) => void;
+  onBlur: (v: EditValue) => void;
 }) {
   if (!isEditing) {
     const n = value === "" ? 0 : value;
@@ -25,12 +27,13 @@ export default function ValueCell({
   return (
     <Input
       name="reportInput"
-      type="number"
+      type="text"
       inputMode="decimal"
       value={value === "" ? "" : Number(value)}
       onChange={(e) => {
         onChangeValue(e.target.value === "" ? "" : Number(e.target.value));
       }}
+      onBlur={(e) => onBlur(e.target.value)}
     />
   );
 }

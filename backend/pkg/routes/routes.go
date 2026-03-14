@@ -40,6 +40,12 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 			r.Get("/", app.ReportHandler.GetAllReports)
 			r.Post("/", app.ReportHandler.AddReprot)
 
+			r.Route("/year", func(r chi.Router) {
+				r.Get("/", app.ReportHandler.GetYears)
+				r.Put("/", app.ReportHandler.UpsertYear)
+				r.Delete("/", app.ReportHandler.DeleteYear)
+			})
+
 			r.Route("/{id}", func(r chi.Router) {
 				r.Get("/", app.ReportHandler.GetReportById)
 				r.Put("/", app.ReportHandler.UpdateReport)
@@ -71,12 +77,9 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 				r.Delete("/", app.ReportFieldHandler.DeleteField)
 			})
 
-			r.Route("/year", func(r chi.Router) {
-				r.Get("/", app.ReportFieldHandler.GetYears)
-				r.Put("/", app.ReportFieldHandler.UpsertYear)
-				r.Delete("/", app.ReportFieldHandler.DeleteYear)
-			})
 		})
+
+		r.Put("/field-value", app.FieldValueHandler.AddFieldValue)
 	})
 
 	r.Get("/api/taxonomy", app.TaxonomyHandler.GetAllTaxonomies)
@@ -84,8 +87,6 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Put("/api/taxonomy/{id}", app.TaxonomyHandler.UpdateTaxonomy)
 	r.Post("/api/taxonomy", app.TaxonomyHandler.AddTaxonomy)
 	r.Delete("/api/taxonomy/{id}", app.TaxonomyHandler.DeleteTaxonomy)
-
-	r.Post("/api/fieldValue", app.FieldValueHandler.AddFieldValue)
 
 	r.Get("/api/asset", app.AssetHandler.GetAllAssets)
 	r.Get("/api/asset/{id}", app.AssetHandler.GetAssetById)

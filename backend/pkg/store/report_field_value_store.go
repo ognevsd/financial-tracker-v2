@@ -24,7 +24,8 @@ func NewSqliteFieldValueStore(db *sql.DB) *SqliteFieldValueStore {
 type ReportFieldValueStore interface {
 	AddFieldValue(*FieldValue) (*FieldValue, error)
 	GetFieldValueByFieldId(fieldId string) ([]*FieldValue, error)
-	UpdateFieldValue(*FieldValue) error
+	GetFieldValueByFieldIdAndYear(fieldId string, year int) (*FieldValue, error)
+	UpdateFieldValue(fieldValueId string, year int) error
 	DeleteFieldValueByFieldId(fieldId string) error
 	ChangeYear(companyId string, reportId string, year int, prevYear int) error
 	DeleteYear(companyId string, reportId string, year int) error
@@ -77,14 +78,37 @@ func (store *SqliteFieldValueStore) GetFieldValueByFieldId(fieldId string) ([]*F
 	return fieldValues, nil
 }
 
-func (store *SqliteFieldValueStore) UpdateFieldValue(fieldValue *FieldValue) error {
+func (store *SqliteFieldValueStore) GetFieldValueByFieldIdAndYear(fieldId string, year int) (*FieldValue, error) {
+	query := `
+	SELECT id, field_id, year, value
+	FROM field_value
+	WHERE field_id = ? AND year = ?
+	ORDER BY year DESC;
+	`
+
+	fieldValue := &FieldValue{}
+
+	err := store.db.QueryRow(query, fieldId, year).Scan(
+		&fieldValue.Id,
+		&fieldValue.FieldId,
+		&fieldValue.Year,
+		&fieldValue.Value,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return fieldValue, nil
+}
+
+func (store *SqliteFieldValueStore) UpdateFieldValue(fieldValueId string, value int) error {
 	query := `
 	UPDATE field_value
 	SET value = $1
 	WHERE id = $2
 	`
 
-	res, err := store.db.Exec(query, fieldValue.Value, fieldValue.Id)
+	res, err := store.db.Exec(query, value, fieldValueId)
 	if err != nil {
 		return err
 	}

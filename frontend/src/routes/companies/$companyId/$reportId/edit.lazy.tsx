@@ -71,7 +71,7 @@ function RouteComponent() {
     mutationFn: (data: UpsertData) => upsertField(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [companyId, reportId, "layout"],
+        queryKey: [companyId, reportId],
       });
     },
   });
@@ -79,7 +79,7 @@ function RouteComponent() {
     mutationFn: (id: string) => deleteField(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [companyId, reportId, "layout"],
+        queryKey: [companyId, reportId],
       });
     },
   });
@@ -87,7 +87,7 @@ function RouteComponent() {
     mutationFn: (data: SwapFieldsData) => swapFields(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [companyId, reportId, "layout"],
+        queryKey: [companyId, reportId],
       });
     },
   });

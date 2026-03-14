@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 
 	"github.com/ognevsd/financial-tracker-v2/pkg/services"
 	"github.com/ognevsd/financial-tracker-v2/pkg/store"
@@ -136,99 +135,6 @@ func (h *ReportFieldHandler) SwapFields(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		h.logger.Error("Error swapping fields", "error", err)
 		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error swapping fields: %v", err)))
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func (h *ReportFieldHandler) UpsertYear(w http.ResponseWriter, r *http.Request) {
-	var requestBody struct {
-		CompanyId *string `json:"companyId"`
-		ReportId  *string `json:"reportId"`
-		Year      *int    `json:"year"`
-		PrevYear  *int    `json:"prevYear"`
-	}
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
-	if err != nil {
-		h.logger.Error("Error parsing json body", "error", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload(fmt.Sprintf("Error parsing json body: %v", err)))
-		return
-	}
-
-	if requestBody.ReportId == nil || requestBody.Year == nil || requestBody.CompanyId == nil {
-		h.logger.Error("Missing data")
-		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("Missing data"))
-		return
-	}
-	h.logger.Info("year", "year", requestBody)
-
-	if requestBody.PrevYear == nil {
-		err = h.reportFieldService.AddYear(*requestBody.CompanyId, *requestBody.ReportId, *requestBody.Year)
-		if err != nil {
-			h.logger.Error("Error adding year", "error", err)
-			utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error adding year: %v", err)))
-			return
-		}
-	} else {
-		err = h.reportFieldService.UpdateYear(*requestBody.CompanyId, *requestBody.ReportId, *requestBody.Year, *requestBody.PrevYear)
-		if err != nil {
-			h.logger.Error("Error changing year", "error", err)
-			utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error adding year: %v", err)))
-			return
-		}
-	}
-}
-
-func (h *ReportFieldHandler) GetYears(w http.ResponseWriter, r *http.Request) {
-	companyId := r.URL.Query().Get("companyId")
-	if companyId == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("companyId is missing"))
-		return
-	}
-	reportId := r.URL.Query().Get("reportId")
-	if reportId == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("reportId is missing"))
-		return
-	}
-
-	years, err := h.reportFieldService.GetYears(companyId, reportId)
-	if err != nil {
-		h.logger.Error("Error getting years", "error", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error geting years: %v", err)))
-		return
-	}
-
-	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"years": years})
-}
-
-func (h *ReportFieldHandler) DeleteYear(w http.ResponseWriter, r *http.Request) {
-	companyId := r.URL.Query().Get("companyId")
-	if companyId == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("companyId is missing"))
-		return
-	}
-	reportId := r.URL.Query().Get("reportId")
-	if reportId == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("reportId is missing"))
-		return
-	}
-	yearStr := r.URL.Query().Get("year")
-	if yearStr == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload("year is missing"))
-		return
-	}
-
-	year, err := strconv.Atoi(yearStr)
-	if err != nil {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.ErrorPayload(fmt.Sprintf("cannot parse to int year: %s", yearStr)))
-		return
-	}
-
-	err = h.reportFieldService.DeleteYear(companyId, reportId, year)
-	if err != nil {
-		h.logger.Error("Error when deleting year", "error", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.ErrorPayload(fmt.Sprintf("Error when deleting year: %v", err)))
 		return
 	}
 

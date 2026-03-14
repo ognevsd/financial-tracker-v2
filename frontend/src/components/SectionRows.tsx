@@ -13,6 +13,7 @@ interface RowProps {
   level?: number;
   isEditing: boolean;
   onChangeCell: (fieldId: string, year: Year, newValue: number) => void;
+  onBlur: (fieldId: string, year: Year, newValue: number) => void;
 }
 
 export default function SectionRows({
@@ -22,6 +23,7 @@ export default function SectionRows({
   level = 0,
   isEditing,
   onChangeCell,
+  onBlur,
 }: RowProps) {
   const indent = calculateIndent(level);
   const totals = sumSectionByYear(section, flatReport, years);
@@ -43,6 +45,7 @@ export default function SectionRows({
                 onChangeValue={(newValue) =>
                   onChangeCell(field.id, year, Number(newValue))
                 }
+                onBlur={(newValue) => onBlur(field.id, year, newValue)}
               />
             </td>
           ))}
@@ -59,6 +62,7 @@ export default function SectionRows({
           level={level + 1}
           isEditing={isEditing}
           onChangeCell={onChangeCell}
+          onBlur={onBlur}
         />
       ))}
 

@@ -1,5 +1,5 @@
 import type { errorResponse } from "../types/error";
-import type { ReportTableData } from "../types/report";
+import type { Report, ReportTableData } from "../types/report";
 
 interface ReportResponse {
   report: ReportTableData;
@@ -7,6 +7,10 @@ interface ReportResponse {
 
 interface ReportsResponse {
   report: ReportTableData[];
+}
+
+interface ReportDetailsResponse {
+  report: Report;
 }
 
 export async function getAllReports(): Promise<ReportsResponse> {
@@ -85,4 +89,29 @@ export async function deleteReportById(id: string) {
     const errData: errorResponse = await resp.json().catch(() => ({}));
     throw new Error(errData.error || `API error: ${resp.status}`);
   }
+}
+
+export async function getReportDetails(
+  companyId: string,
+  reportId: string,
+): Promise<ReportDetailsResponse> {
+  const params = new URLSearchParams({
+    companyId: companyId,
+    reportId: reportId,
+  });
+  const url = `/api/report/details?${params.toString()}`;
+
+  const resp = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!resp.ok) {
+    const errData: errorResponse = await resp.json().catch(() => ({}));
+    throw new Error(errData.error);
+  }
+
+  return resp.json();
 }

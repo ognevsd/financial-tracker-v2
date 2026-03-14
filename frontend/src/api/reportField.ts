@@ -7,7 +7,7 @@ export async function upsertYear(
   reportId: string,
   companyId: string,
 ) {
-  const resp = await fetch("/api/report-field/year", {
+  const resp = await fetch("/api/report/year", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -31,7 +31,7 @@ export async function getYears(
   companyId: string,
   reportId: string,
 ): Promise<Years> {
-  const url = `/api/report-field/year?companyId=${companyId}&reportId=${reportId}`;
+  const url = `/api/report/year?companyId=${companyId}&reportId=${reportId}`;
   const resp = await fetch(url, {
     method: "GET",
     headers: {
@@ -55,7 +55,7 @@ export async function deleteYear(
     reportId: reportId,
     year: String(year),
   });
-  const url = `/api/report-field/year?${params.toString()}`;
+  const url = `/api/report/year?${params.toString()}`;
   const resp = await fetch(url, {
     method: "DELETE",
     headers: {

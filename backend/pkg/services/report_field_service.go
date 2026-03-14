@@ -8,27 +8,21 @@ import (
 )
 
 type reportFieldService struct {
-	logger          *slog.Logger
-	store           store.ReportFieldStore
-	fieldValueStore store.ReportFieldValueStore
+	logger *slog.Logger
+	store  store.ReportFieldStore
 }
 
 func NewReportFieldService(
 	logger *slog.Logger,
 	store store.ReportFieldStore,
-	fieldValueStore store.ReportFieldValueStore,
 ) *reportFieldService {
-	return &reportFieldService{logger: logger, store: store, fieldValueStore: fieldValueStore}
+	return &reportFieldService{logger: logger, store: store}
 }
 
 type ReportFieldService interface {
 	UpsertField(input *UpsertFieldInput) error
 	DeleteField(id string) error
 	SwapFields(fieldIdOne string, orderIndexOne int, fieldIdTwo string, orderIndexTwo int) error
-	AddYear(companyId string, reportId string, year int) error
-	UpdateYear(companyId string, reportId string, year int, prevYear int) error
-	GetYears(companyId string, reportId string) ([]int, error)
-	DeleteYear(compnyId string, reportId string, year int) error
 }
 
 type UpsertFieldInput struct {
@@ -110,65 +104,4 @@ func (s *reportFieldService) DeleteField(id string) error {
 	// s.logger.Info("Report Fields", "fields", reportFields)
 
 	return nil
-}
-
-func (s *reportFieldService) AddYear(companyId string, reportId string, year int) error {
-	reportFieldFilter := &store.ReportFieldFilter{
-		ReportId:  reportId,
-		CompanyId: companyId,
-	}
-	reportFields, err := s.store.GetReportFields(reportFieldFilter)
-	if err != nil {
-		return err
-	}
-	s.logger.Info("Report fields", "fields", reportFields)
-	for _, field := range reportFields {
-		_, err := s.fieldValueStore.AddFieldValue(&store.FieldValue{
-			FieldId: field.Id,
-			Year:    year,
-		})
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (s *reportFieldService) UpdateYear(companyId string, reportId string, year int, prevYear int) error {
-	return s.fieldValueStore.ChangeYear(companyId, reportId, year, prevYear)
-}
-
-func (s *reportFieldService) DeleteYear(companyId string, reportId string, year int) error {
-	return s.fieldValueStore.DeleteYear(companyId, reportId, year)
-}
-
-func (s *reportFieldService) GetYears(companyId string, reportId string) ([]int, error) {
-	years := []int{}
-	// 1. Get any report field
-	reportField, err := s.store.GetReportFields(&store.ReportFieldFilter{
-		CompanyId: companyId,
-		ReportId:  reportId,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if len(reportField) == 0 {
-		// return nil, errors.New("No fields found")
-		return years, nil
-	}
-
-	// 2. Get all year values
-	fieldValues, err := s.fieldValueStore.GetFieldValueByFieldId(reportField[0].Id)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, value := range fieldValues {
-		years = append(years, value.Year)
-	}
-
-	// 3. Create an array of years from any field
-	return years, nil
 }

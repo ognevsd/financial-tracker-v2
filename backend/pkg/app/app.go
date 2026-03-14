@@ -84,7 +84,7 @@ func New() (*Application, error) {
 
 	// services will go here
 	reportService := services.NewReportService(newLogger, reportStore, reportSectionStore, reportFieldStore, fieldValueStore)
-	reportFieldService := services.NewReportFieldService(newLogger, reportFieldStore, fieldValueStore)
+	reportFieldService := services.NewReportFieldService(newLogger, reportFieldStore)
 
 	// handlers will go here
 	currencyHandler := api.NewCurrencyHandler(currencyStore, logger)
