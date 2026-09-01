@@ -1,4 +1,5 @@
 export interface TransactionFormData {
+  id?: string;
   operation: string;
   date: string;
   ticker: string;

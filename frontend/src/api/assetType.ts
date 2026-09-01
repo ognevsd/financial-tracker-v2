@@ -1,8 +1,5 @@
 import type { AssetTypeTableData } from "../types/assetType";
-
-interface errorResponse {
-  error: string;
-}
+import type { errorResponse } from "../types/error";
 
 interface assetTypesResponse {
   assetType: AssetTypeTableData[];

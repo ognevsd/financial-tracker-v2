@@ -123,6 +123,7 @@ function RouteComponent() {
       });
       setEditTransactionId(null);
       setFormData(defaultForm);
+      setModalOpen(false);
     },
     onError: (error) => {
       setToastInfo({
@@ -180,6 +181,7 @@ function RouteComponent() {
           onSubmit={submitForm}
           onClear={clearForm}
           isEdit={true}
+          onDelete={deleteTransactionMutation.mutate}
         />
       </Modal>
     </div>

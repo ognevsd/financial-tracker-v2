@@ -8,6 +8,7 @@ import { getAllAssetTypes } from "../api/assetType";
 import Button from "./ui/button";
 import type { TransactionFormData } from "../types/transaction";
 import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { Trash2 } from "lucide-react";
 
 interface TransactionFormProps {
   formData: TransactionFormData;
@@ -15,6 +16,7 @@ interface TransactionFormProps {
   onSubmit: () => void;
   onClear: () => void;
   isEdit: boolean;
+  onDelete?: (id: string) => void;
 }
 
 export default function TransactionForm({
@@ -23,6 +25,7 @@ export default function TransactionForm({
   onSubmit,
   onClear,
   isEdit,
+  onDelete,
 }: TransactionFormProps) {
   const { data: currencies, isPending: isCurrenciesPending } = useQuery({
     queryFn: getAllCurrencies,
@@ -121,8 +124,9 @@ export default function TransactionForm({
         <div>
           <Label htmlFor="date">Date</Label>
           <Input
-            type="date"
+            type="text"
             id="date"
+            pattern="\d{4}-\d{2}-\d{2}"
             value={formData.date}
             required
             onChange={(e) => {
@@ -261,21 +265,26 @@ export default function TransactionForm({
           }}
         />
       </div>
-      <div className="space-x-2">
-        <Button
-          type="submit"
-          className="border px-4 py-2 rounded hover:bg-gray-200"
-        >
-          {isEdit ? "Save Changes" : "Add Transaction"}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          className="border px-4 py-2 rounded hover:bg-gray-200"
-          onClick={onClear}
-        >
-          Clear
-        </Button>
+      <div className="flex justify-between">
+        <div className="space-x-2">
+          <Button type="submit">
+            {isEdit ? "Save Changes" : "Add Transaction"}
+          </Button>
+          {!isEdit && (
+            <Button type="button" variant="secondary" onClick={onClear}>
+              Clear
+            </Button>
+          )}
+        </div>
+        {isEdit && (
+          <Button
+            type="button"
+            onClick={() => onDelete?.(formData.id || "unknown id")}
+            variant="destructive"
+          >
+            <Trash2 />
+          </Button>
+        )}
       </div>
     </form>
   );

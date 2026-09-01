@@ -34,6 +34,64 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r.Post("/api/assettype", app.AssetTypeHandler.AddAssetType)
 	r.Delete("/api/assettype/{id}", app.AssetTypeHandler.DeleteAssetType)
 
+	r.Route("/api", func(r chi.Router) {
+
+		r.Route("/report", func(r chi.Router) {
+			r.Get("/", app.ReportHandler.GetAllReports)
+			r.Post("/", app.ReportHandler.AddReprot)
+
+			r.Route("/year", func(r chi.Router) {
+				r.Get("/", app.ReportHandler.GetYears)
+				r.Put("/", app.ReportHandler.UpsertYear)
+				r.Delete("/", app.ReportHandler.DeleteYear)
+			})
+
+			r.Route("/{id}", func(r chi.Router) {
+				r.Get("/", app.ReportHandler.GetReportById)
+				r.Put("/", app.ReportHandler.UpdateReport)
+				r.Delete("/", app.ReportHandler.DeleteReport)
+			})
+
+			r.Get("/layout", app.ReportHandler.GetLayout)
+			r.Get("/details", app.ReportHandler.GetReportDetails)
+		})
+
+		r.Route("/report-section", func(r chi.Router) {
+			r.Get("/", app.ReportSectionHandler.GetAllReportSections)
+			r.Post("/", app.ReportSectionHandler.AddReportSection)
+
+			r.Route("/{id}", func(r chi.Router) {
+				r.Get("/", app.ReportSectionHandler.GetReportSectionById)
+				r.Put("/", app.ReportSectionHandler.UpdateReportSection)
+				r.Delete("/", app.ReportSectionHandler.DeleteReportSection)
+			})
+		})
+
+		r.Route("/report-field", func(r chi.Router) {
+			r.Get("/", app.ReportFieldHandler.GetAllReportFields)
+			r.Put("/", app.ReportFieldHandler.UpsertField)
+
+			r.Post("/swap", app.ReportFieldHandler.SwapFields)
+
+			r.Route("/{id}", func(r chi.Router) {
+				r.Delete("/", app.ReportFieldHandler.DeleteField)
+			})
+
+		})
+
+		r.Put("/field-value", app.FieldValueHandler.AddFieldValue)
+	})
+
+	r.Get("/api/taxonomy", app.TaxonomyHandler.GetAllTaxonomies)
+	r.Get("/api/taxonomy/{id}", app.TaxonomyHandler.GetTaxonomyById)
+	r.Put("/api/taxonomy/{id}", app.TaxonomyHandler.UpdateTaxonomy)
+	r.Post("/api/taxonomy", app.TaxonomyHandler.AddTaxonomy)
+	r.Delete("/api/taxonomy/{id}", app.TaxonomyHandler.DeleteTaxonomy)
+
+	r.Get("/api/asset", app.AssetHandler.GetAllAssets)
+	r.Get("/api/asset/{id}", app.AssetHandler.GetAssetById)
+	r.Post("/api/asset", app.AssetHandler.AddAsset)
+
 	r.NotFound(app.ServeStaticFiles)
 
 	return r

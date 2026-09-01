@@ -4,28 +4,64 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/ognevsd/financial-tracker-v2/migrations"
 	"github.com/ognevsd/financial-tracker-v2/pkg/api"
+	"github.com/ognevsd/financial-tracker-v2/pkg/services"
 	"github.com/ognevsd/financial-tracker-v2/pkg/store"
 )
 
 const StaticFiles string = "../frontend/dist"
 
 type Application struct {
-	Logger             *log.Logger
-	TransactionHandler *api.TransactionHandler
-	CurrencyHandler    *api.CurrencyHandler
-	OperationHandler   *api.OperationHandler
-	AssetTypeHandler   *api.AssetTypeHandler
-	DB                 *sql.DB
+	Logger               *log.Logger
+	NewLogger            *slog.Logger
+	TransactionHandler   *api.TransactionHandler
+	CurrencyHandler      *api.CurrencyHandler
+	OperationHandler     *api.OperationHandler
+	AssetTypeHandler     *api.AssetTypeHandler
+	ReportHandler        *api.ReportHandler
+	ReportSectionHandler *api.ReportSectionHandler
+	ReportFieldHandler   *api.ReportFieldHandler
+	TaxonomyHandler      *api.TaxonomyHandler
+	FieldValueHandler    *api.FieldValueHandler
+	AssetHandler         *api.AssetHandler
+	DB                   *sql.DB
 }
 
 func New() (*Application, error) {
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	opts := &slog.HandlerOptions{
+		AddSource: true,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey && len(groups) == 0 {
+				t := a.Value.Time()
+				a.Value = slog.TimeValue(t.Truncate(time.Second))
+				return a
+			}
+			if a.Key == slog.SourceKey {
+				src := a.Value.Any().(*slog.Source)
+
+				file := filepath.Base(src.File)
+				dir := filepath.Dir(src.File)
+				pkg := filepath.Base(dir)
+
+				src.File = pkg + ":" + file
+				src.Function = ""
+				return slog.Any(a.Key, src)
+			}
+			return a
+		},
+	}
+	logger := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
+	newLogger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
+
 	sqliteDB, err := store.Open()
+
 	if err != nil {
 		return nil, err
 	}
@@ -33,25 +69,49 @@ func New() (*Application, error) {
 	if err != nil {
 		panic(err)
 	}
+
 	// stores will go here
 	currencyStore := store.NewSqliteCurrencyStore(sqliteDB)
 	operationStore := store.NewOperationStore(sqliteDB)
 	assetTypeStore := store.NewAssetTypeStore(sqliteDB)
 	transactionStore := store.NewSqliteTransactionStore(sqliteDB)
+	reportStore := store.NewSqliteReportStore(sqliteDB)
+	reportSectionStore := store.NewSqliteReportSectionStore(sqliteDB)
+	reportFieldStore := store.NewSqliteReportFieldStore(sqliteDB)
+	taxonomyStore := store.NewTaxonomyStore(sqliteDB)
+	fieldValueStore := store.NewSqliteFieldValueStore(sqliteDB)
+	assetStore := store.NewSqliteAssetStore(sqliteDB)
+
+	// services will go here
+	reportService := services.NewReportService(newLogger, reportStore, reportSectionStore, reportFieldStore, fieldValueStore)
+	reportFieldService := services.NewReportFieldService(newLogger, reportFieldStore)
 
 	// handlers will go here
 	currencyHandler := api.NewCurrencyHandler(currencyStore, logger)
 	operationHandler := api.NewOperationHandler(operationStore, logger)
 	assetTypeHandler := api.NewAssetTypeHandler(assetTypeStore, logger)
-	transactionHandler := api.NewTransactionHandler(transactionStore, logger)
+	transactionHandler := api.NewTransactionHandler(transactionStore, logger, newLogger)
+	reportHandler := api.NewReportHandler(reportStore, reportService, logger, newLogger)
+	reportSectionHandler := api.NewReportSectionHandler(reportSectionStore, logger)
+	reportFieldHandler := api.NewReportFieldHandler(reportFieldStore, reportFieldService, newLogger)
+	taxonomyHandler := api.NewTaxonomyHandler(taxonomyStore, logger)
+	fieldValueHandler := api.NewFieldValueHandler(fieldValueStore, newLogger)
+	assetHandler := api.NewAssetHandler(assetStore, newLogger)
 
 	app := &Application{
-		Logger:             logger,
-		TransactionHandler: transactionHandler,
-		CurrencyHandler:    currencyHandler,
-		OperationHandler:   operationHandler,
-		AssetTypeHandler:   assetTypeHandler,
-		DB:                 sqliteDB,
+		Logger:               logger,
+		NewLogger:            newLogger,
+		TransactionHandler:   transactionHandler,
+		CurrencyHandler:      currencyHandler,
+		OperationHandler:     operationHandler,
+		AssetTypeHandler:     assetTypeHandler,
+		ReportHandler:        reportHandler,
+		ReportSectionHandler: reportSectionHandler,
+		ReportFieldHandler:   reportFieldHandler,
+		TaxonomyHandler:      taxonomyHandler,
+		FieldValueHandler:    fieldValueHandler,
+		AssetHandler:         assetHandler,
+		DB:                   sqliteDB,
 	}
 
 	return app, nil

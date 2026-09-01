@@ -16,6 +16,22 @@ import { Route as IndexRouteImport } from './routes/index'
 const TransactionsLazyRouteImport = createFileRoute('/transactions')()
 const SettingsLazyRouteImport = createFileRoute('/settings')()
 const DividendYieldLazyRouteImport = createFileRoute('/dividend-yield')()
+const CompaniesIndexLazyRouteImport = createFileRoute('/companies/')()
+const CompaniesCompanyIdLazyRouteImport = createFileRoute(
+  '/companies/$companyId',
+)()
+const CompaniesCompanyIdIndexLazyRouteImport = createFileRoute(
+  '/companies/$companyId/',
+)()
+const CompaniesCompanyIdDetailsLazyRouteImport = createFileRoute(
+  '/companies/$companyId/details',
+)()
+const CompaniesCompanyIdReportIdIndexLazyRouteImport = createFileRoute(
+  '/companies/$companyId/$reportId/',
+)()
+const CompaniesCompanyIdReportIdEditLazyRouteImport = createFileRoute(
+  '/companies/$companyId/$reportId/edit',
+)()
 
 const TransactionsLazyRoute = TransactionsLazyRouteImport.update({
   id: '/transactions',
@@ -39,18 +55,79 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompaniesIndexLazyRoute = CompaniesIndexLazyRouteImport.update({
+  id: '/companies/',
+  path: '/companies/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/companies/index.lazy').then((d) => d.Route),
+)
+const CompaniesCompanyIdLazyRoute = CompaniesCompanyIdLazyRouteImport.update({
+  id: '/companies/$companyId',
+  path: '/companies/$companyId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/companies/$companyId.lazy').then((d) => d.Route),
+)
+const CompaniesCompanyIdIndexLazyRoute =
+  CompaniesCompanyIdIndexLazyRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => CompaniesCompanyIdLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/companies/$companyId/index.lazy').then((d) => d.Route),
+  )
+const CompaniesCompanyIdDetailsLazyRoute =
+  CompaniesCompanyIdDetailsLazyRouteImport.update({
+    id: '/details',
+    path: '/details',
+    getParentRoute: () => CompaniesCompanyIdLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/companies/$companyId/details.lazy').then((d) => d.Route),
+  )
+const CompaniesCompanyIdReportIdIndexLazyRoute =
+  CompaniesCompanyIdReportIdIndexLazyRouteImport.update({
+    id: '/$reportId/',
+    path: '/$reportId/',
+    getParentRoute: () => CompaniesCompanyIdLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/companies/$companyId/$reportId/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const CompaniesCompanyIdReportIdEditLazyRoute =
+  CompaniesCompanyIdReportIdEditLazyRouteImport.update({
+    id: '/$reportId/edit',
+    path: '/$reportId/edit',
+    getParentRoute: () => CompaniesCompanyIdLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/companies/$companyId/$reportId/edit.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dividend-yield': typeof DividendYieldLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/transactions': typeof TransactionsLazyRoute
+  '/companies/$companyId': typeof CompaniesCompanyIdLazyRouteWithChildren
+  '/companies': typeof CompaniesIndexLazyRoute
+  '/companies/$companyId/details': typeof CompaniesCompanyIdDetailsLazyRoute
+  '/companies/$companyId/': typeof CompaniesCompanyIdIndexLazyRoute
+  '/companies/$companyId/$reportId/edit': typeof CompaniesCompanyIdReportIdEditLazyRoute
+  '/companies/$companyId/$reportId': typeof CompaniesCompanyIdReportIdIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dividend-yield': typeof DividendYieldLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/transactions': typeof TransactionsLazyRoute
+  '/companies': typeof CompaniesIndexLazyRoute
+  '/companies/$companyId/details': typeof CompaniesCompanyIdDetailsLazyRoute
+  '/companies/$companyId': typeof CompaniesCompanyIdIndexLazyRoute
+  '/companies/$companyId/$reportId/edit': typeof CompaniesCompanyIdReportIdEditLazyRoute
+  '/companies/$companyId/$reportId': typeof CompaniesCompanyIdReportIdIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -58,13 +135,49 @@ export interface FileRoutesById {
   '/dividend-yield': typeof DividendYieldLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/transactions': typeof TransactionsLazyRoute
+  '/companies/$companyId': typeof CompaniesCompanyIdLazyRouteWithChildren
+  '/companies/': typeof CompaniesIndexLazyRoute
+  '/companies/$companyId/details': typeof CompaniesCompanyIdDetailsLazyRoute
+  '/companies/$companyId/': typeof CompaniesCompanyIdIndexLazyRoute
+  '/companies/$companyId/$reportId/edit': typeof CompaniesCompanyIdReportIdEditLazyRoute
+  '/companies/$companyId/$reportId/': typeof CompaniesCompanyIdReportIdIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dividend-yield' | '/settings' | '/transactions'
+  fullPaths:
+    | '/'
+    | '/dividend-yield'
+    | '/settings'
+    | '/transactions'
+    | '/companies/$companyId'
+    | '/companies'
+    | '/companies/$companyId/details'
+    | '/companies/$companyId/'
+    | '/companies/$companyId/$reportId/edit'
+    | '/companies/$companyId/$reportId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dividend-yield' | '/settings' | '/transactions'
-  id: '__root__' | '/' | '/dividend-yield' | '/settings' | '/transactions'
+  to:
+    | '/'
+    | '/dividend-yield'
+    | '/settings'
+    | '/transactions'
+    | '/companies'
+    | '/companies/$companyId/details'
+    | '/companies/$companyId'
+    | '/companies/$companyId/$reportId/edit'
+    | '/companies/$companyId/$reportId'
+  id:
+    | '__root__'
+    | '/'
+    | '/dividend-yield'
+    | '/settings'
+    | '/transactions'
+    | '/companies/$companyId'
+    | '/companies/'
+    | '/companies/$companyId/details'
+    | '/companies/$companyId/'
+    | '/companies/$companyId/$reportId/edit'
+    | '/companies/$companyId/$reportId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -72,6 +185,8 @@ export interface RootRouteChildren {
   DividendYieldLazyRoute: typeof DividendYieldLazyRoute
   SettingsLazyRoute: typeof SettingsLazyRoute
   TransactionsLazyRoute: typeof TransactionsLazyRoute
+  CompaniesCompanyIdLazyRoute: typeof CompaniesCompanyIdLazyRouteWithChildren
+  CompaniesIndexLazyRoute: typeof CompaniesIndexLazyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -104,14 +219,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/companies/': {
+      id: '/companies/'
+      path: '/companies'
+      fullPath: '/companies'
+      preLoaderRoute: typeof CompaniesIndexLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies/$companyId': {
+      id: '/companies/$companyId'
+      path: '/companies/$companyId'
+      fullPath: '/companies/$companyId'
+      preLoaderRoute: typeof CompaniesCompanyIdLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies/$companyId/': {
+      id: '/companies/$companyId/'
+      path: '/'
+      fullPath: '/companies/$companyId/'
+      preLoaderRoute: typeof CompaniesCompanyIdIndexLazyRouteImport
+      parentRoute: typeof CompaniesCompanyIdLazyRoute
+    }
+    '/companies/$companyId/details': {
+      id: '/companies/$companyId/details'
+      path: '/details'
+      fullPath: '/companies/$companyId/details'
+      preLoaderRoute: typeof CompaniesCompanyIdDetailsLazyRouteImport
+      parentRoute: typeof CompaniesCompanyIdLazyRoute
+    }
+    '/companies/$companyId/$reportId/': {
+      id: '/companies/$companyId/$reportId/'
+      path: '/$reportId'
+      fullPath: '/companies/$companyId/$reportId'
+      preLoaderRoute: typeof CompaniesCompanyIdReportIdIndexLazyRouteImport
+      parentRoute: typeof CompaniesCompanyIdLazyRoute
+    }
+    '/companies/$companyId/$reportId/edit': {
+      id: '/companies/$companyId/$reportId/edit'
+      path: '/$reportId/edit'
+      fullPath: '/companies/$companyId/$reportId/edit'
+      preLoaderRoute: typeof CompaniesCompanyIdReportIdEditLazyRouteImport
+      parentRoute: typeof CompaniesCompanyIdLazyRoute
+    }
   }
 }
+
+interface CompaniesCompanyIdLazyRouteChildren {
+  CompaniesCompanyIdDetailsLazyRoute: typeof CompaniesCompanyIdDetailsLazyRoute
+  CompaniesCompanyIdIndexLazyRoute: typeof CompaniesCompanyIdIndexLazyRoute
+  CompaniesCompanyIdReportIdEditLazyRoute: typeof CompaniesCompanyIdReportIdEditLazyRoute
+  CompaniesCompanyIdReportIdIndexLazyRoute: typeof CompaniesCompanyIdReportIdIndexLazyRoute
+}
+
+const CompaniesCompanyIdLazyRouteChildren: CompaniesCompanyIdLazyRouteChildren =
+  {
+    CompaniesCompanyIdDetailsLazyRoute: CompaniesCompanyIdDetailsLazyRoute,
+    CompaniesCompanyIdIndexLazyRoute: CompaniesCompanyIdIndexLazyRoute,
+    CompaniesCompanyIdReportIdEditLazyRoute:
+      CompaniesCompanyIdReportIdEditLazyRoute,
+    CompaniesCompanyIdReportIdIndexLazyRoute:
+      CompaniesCompanyIdReportIdIndexLazyRoute,
+  }
+
+const CompaniesCompanyIdLazyRouteWithChildren =
+  CompaniesCompanyIdLazyRoute._addFileChildren(
+    CompaniesCompanyIdLazyRouteChildren,
+  )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DividendYieldLazyRoute: DividendYieldLazyRoute,
   SettingsLazyRoute: SettingsLazyRoute,
   TransactionsLazyRoute: TransactionsLazyRoute,
+  CompaniesCompanyIdLazyRoute: CompaniesCompanyIdLazyRouteWithChildren,
+  CompaniesIndexLazyRoute: CompaniesIndexLazyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
